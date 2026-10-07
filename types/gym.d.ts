@@ -44,6 +44,10 @@ export interface OgRestTimerElement extends HTMLElement {
   reset(): void;
 }
 
+/**
+ * Attributes: `weeks` (1–104, default 26), `week-start` (0 = Sunday … 6 = Saturday, default 1),
+ * `unit`, `today` ('YYYY-MM-DD'), `label`, `less-label`, `more-label`.
+ */
 export interface OgHeatmapElement extends HTMLElement {
   /** `{ 'YYYY-MM-DD': value }`. Days with a value above 0 are shaded by quartile. */
   data: Record<string, number>;
