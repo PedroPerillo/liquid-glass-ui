@@ -12,10 +12,10 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff9a3c'/%3E%3Cstop offset='.45' stop-color='%23ff3d7f'/%3E%3Cstop offset='1' stop-color='%235b2bff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='4' y='18' width='56' height='28' rx='14' fill='url(%23g)'/%3E%3Crect x='8' y='22' width='22' height='20' rx='10' fill='%23fff' fill-opacity='.55'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="./src/liquid-glass.css">
-<link rel="stylesheet" href="./src/liquid-metal.css">
-<link rel="stylesheet" href="./src/gradients.css">
-<link rel="stylesheet" href="./demo/site.css">
+<link rel="stylesheet" href="/src/liquid-glass.css">
+<link rel="stylesheet" href="/src/liquid-metal.css">
+<link rel="stylesheet" href="/src/gradients.css">
+<link rel="stylesheet" href="/demo/site.css">
 <style>
 /* Layout: text-led hero beside a live phone, then three collection cards with working previews, then setup. */
 .wrap { max-width: 1120px; gap: 72px; padding-block: 12px 64px; }
@@ -112,9 +112,9 @@
   <nav class="lg lg-toolbar top" data-sticky aria-label="Site">
     <span class="lg-toolbar__title">liquid-glass-ui</span>
     <div class="site-nav">
-      <a href="./demo/index.html">Glass</a>
-      <a href="./demo/metal.html">Metal</a>
-      <a href="./demo/gradients.html">Gradients</a>
+      <a href="/demo/">Glass</a>
+      <a href="/demo/metal.html">Metal</a>
+      <a href="/demo/gradients.html">Gradients</a>
       <a class="gh" href="https://github.com/PedroPerillo/liquid-glass-ui"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.1c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.9 1.3 1.9 1.3 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z"/></svg><span>GitHub</span></a>
     </div>
   </nav>
@@ -181,7 +181,7 @@
           <h3>Liquid Glass</h3>
           <p>Tab bar, segmented control, toolbar, buttons, chips, search, switch, card, sheet and toast. Real edge refraction in Chromium, frosted glass in Safari and Firefox, solid for Reduce Transparency.</p>
           <span class="meta">12 components · liquid-glass.css + .js</span>
-          <a class="col-link" href="./demo/index.html">Open the glass demo</a>
+          <a class="col-link" href="/demo/">Open the glass demo</a>
         </div>
       </article>
 
@@ -198,7 +198,7 @@
           <h3>Liquid Metal</h3>
           <p>Chrome buttons, chips, cards, rings, switch, slider, progress and text. The rim ripples like liquid metal using CSS and one SVG filter, so there's no WebGL and no limit on how many you use.</p>
           <span class="meta">9 components · gold, silver, still variants</span>
-          <a class="col-link" href="./demo/metal.html">Open the metal demo</a>
+          <a class="col-link" href="/demo/metal.html">Open the metal demo</a>
         </div>
       </article>
 
@@ -214,7 +214,7 @@
           <h3>Gradients</h3>
           <p>Nine mesh gradient presets in pure CSS, each with a readable text color built in. Add slow drift, film grain or clip them to text. Dusk is the balance card that started this project.</p>
           <span class="meta">9 presets · gradients.css · no JavaScript</span>
-          <a class="col-link" href="./demo/gradients.html">Open the gradients demo</a>
+          <a class="col-link" href="/demo/gradients.html">Open the gradients demo</a>
         </div>
       </article>
     </div>
@@ -257,13 +257,13 @@
 
   <footer class="site-foot">
     <span>Made by Pedro Perillo · MIT license</span>
-    <span><a href="https://github.com/PedroPerillo/liquid-glass-ui">GitHub</a> · <a href="./demo/preview.html">Original prototype</a></span>
+    <span><a href="https://github.com/PedroPerillo/liquid-glass-ui">GitHub</a> · <a href="/demo/preview.html">Original prototype</a></span>
   </footer>
 </div>
 
 <script type="module">
-import { supportsRefraction, toast } from './src/liquid-glass.js';
-import './src/liquid-metal.js';
+import { supportsRefraction, toast } from '/src/liquid-glass.js';
+import '/src/liquid-metal.js';
 
 document.getElementById('engineNote').textContent = supportsRefraction
   ? 'Scroll inside the phone. Your browser is rendering real refraction.'

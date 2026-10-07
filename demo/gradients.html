@@ -6,10 +6,10 @@
 <title>Gradients · liquid-glass-ui</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="../src/liquid-glass.css">
-<link rel="stylesheet" href="../src/liquid-metal.css">
-<link rel="stylesheet" href="../src/gradients.css">
-<link rel="stylesheet" href="./site.css">
+<link rel="stylesheet" href="/src/liquid-glass.css">
+<link rel="stylesheet" href="/src/liquid-metal.css">
+<link rel="stylesheet" href="/src/gradients.css">
+<link rel="stylesheet" href="/demo/site.css">
 <style>
 .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
 .swatch { position: relative; }
@@ -47,9 +47,9 @@
   <nav class="lg lg-toolbar top" data-sticky aria-label="Collections">
     <span class="lg-toolbar__title">liquid-glass-ui</span>
     <div class="site-nav">
-      <a href="./index.html">Glass</a>
-      <a href="./metal.html">Metal</a>
-      <a href="./gradients.html" aria-current="page">Gradients</a>
+      <a href="/demo/">Glass</a>
+      <a href="/demo/metal.html">Metal</a>
+      <a href="/demo/gradients.html" aria-current="page">Gradients</a>
     </div>
   </nav>
 
@@ -150,13 +150,13 @@
 
   <footer>
     <span>Only needs <code>gradients.css</code>. No JavaScript.</span>
-    <span><a href="./index.html">Glass components</a> · <a href="./metal.html">Liquid metal</a></span>
+    <span><a href="/demo/">Glass components</a> · <a href="/demo/metal.html">Liquid metal</a></span>
   </footer>
 </div>
 
 <script type="module">
-import { toast } from '../src/liquid-glass.js';
-import '../src/liquid-metal.js';
+import { toast } from '/src/liquid-glass.js';
+import '/src/liquid-metal.js';
 
 const presets = [
   ['dusk', 'The original balance card'],
@@ -198,7 +198,7 @@ grid.addEventListener('click', async (e) => {
 });
 
 // ---------- Playground ----------
-import('./site.js').then(({ bindSeg, bindCollapse, addCopyButtons }) => {
+import('/demo/site.js').then(({ bindSeg, bindCollapse, addCopyButtons }) => {
   const preview = document.getElementById('playPreview');
   const code = document.getElementById('settingsCode');
   const animIn = document.getElementById('animIn'), grainIn = document.getElementById('grainIn');

@@ -6,10 +6,10 @@
 <title>Liquid Metal · liquid-glass-ui</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="../src/liquid-glass.css">
-<link rel="stylesheet" href="../src/liquid-metal.css">
-<link rel="stylesheet" href="../src/gradients.css">
-<link rel="stylesheet" href="./site.css">
+<link rel="stylesheet" href="/src/liquid-glass.css">
+<link rel="stylesheet" href="/src/liquid-metal.css">
+<link rel="stylesheet" href="/src/gradients.css">
+<link rel="stylesheet" href="/demo/site.css">
 <style>
 /* Metal reads best on dark, so stages stay graphite in both themes. */
 .mstage { border-radius: 26px; padding: 30px 18px; min-height: 150px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px;
@@ -39,9 +39,9 @@
   <nav class="lg lg-toolbar top" data-sticky aria-label="Collections">
     <span class="lg-toolbar__title">liquid-glass-ui</span>
     <div class="site-nav">
-      <a href="./index.html">Glass</a>
-      <a href="./metal.html" aria-current="page">Metal</a>
-      <a href="./gradients.html">Gradients</a>
+      <a href="/demo/">Glass</a>
+      <a href="/demo/metal.html" aria-current="page">Metal</a>
+      <a href="/demo/gradients.html">Gradients</a>
     </div>
   </nav>
 
@@ -209,15 +209,15 @@
 
   <footer>
     <span>Load <code>liquid-metal.css</code> for static chrome, add <code>liquid-metal.js</code> for the liquid flow, pointer highlight, ripples and slider fill.</span>
-    <span><a href="./index.html">Glass components</a> · <a href="./gradients.html">Gradient backgrounds</a></span>
+    <span><a href="/demo/">Glass components</a> · <a href="/demo/gradients.html">Gradient backgrounds</a></span>
   </footer>
 </div>
 
 <script type="module">
-import '../src/liquid-glass.js';
-import '../src/liquid-metal.js';
-import { setFlow } from '../src/liquid-metal.js';
-import { bindSeg, bindCollapse } from './site.js';
+import '/src/liquid-glass.js';
+import '/src/liquid-metal.js';
+import { setFlow } from '/src/liquid-metal.js';
+import { bindSeg, bindCollapse } from '/demo/site.js';
 
 const root = document.documentElement;
 const stages = [...document.querySelectorAll('.mstage')].filter((el) => !el.closest('#variants'));
