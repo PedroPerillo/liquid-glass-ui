@@ -550,7 +550,7 @@ class OgHeatmap extends HTMLElement {
 
   render() {
     const weeks = Math.max(1, Math.min(104, Math.round(numAttr(this, 'weeks', 26))));
-    const ws = numAttr(this, 'week-start', 1) === 0 ? 0 : 1;
+    const ws = ((Math.round(numAttr(this, 'week-start', 1)) % 7) + 7) % 7; // 0 = Sunday … 6 = Saturday
     const unit = this.getAttribute('unit') || '';
     const data = this.data;
 
@@ -576,8 +576,9 @@ class OgHeatmap extends HTMLElement {
       const colStart = new Date(first);
       colStart.setDate(first.getDate() + w * 7);
       const m = colStart.getMonth();
-      // Label a column when the 1st of a month falls in it; a month already under way at the
-      // left edge gets no label. Never on the last column, where the text would overflow.
+      // Label the first column that starts in a new month (its first day is the 1st–7th); a
+      // month already under way at the left edge gets no label. Never on the last column,
+      // where the text would overflow.
       const label = m !== lastMonth && colStart.getDate() <= 7 && w < weeks - 1 ? MONTHS[m] : '';
       if (colStart.getDate() <= 7) lastMonth = m;
       months.push(`<span>${label}</span>`);
@@ -798,6 +799,7 @@ class OgLineChart extends HTMLElement {
  * ====================================================================== */
 
 const SWIPE_OPEN = 84;
+let openSwipe = null; // only one row open at a time, like iOS lists
 
 class OgSwipeRow extends HTMLElement {
   connectedCallback() {
@@ -870,6 +872,8 @@ class OgSwipeRow extends HTMLElement {
   /** Show one side's action. */
   open(kind, focus) {
     if (kind === 'copy' && !this.copy) return;
+    if (openSwipe && openSwipe !== this) openSwipe.close(true);
+    openSwipe = this;
     this.side = kind;
     this.setX(kind === 'delete' ? -SWIPE_OPEN : SWIPE_OPEN, true);
     this.setInert();
@@ -877,6 +881,7 @@ class OgSwipeRow extends HTMLElement {
   }
 
   close(animate = true) {
+    if (openSwipe === this) openSwipe = null;
     this.side = null;
     this.setX(0, animate);
     this.setInert();
@@ -906,6 +911,7 @@ class OgSwipeRow extends HTMLElement {
       if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { this.drag = null; return; } // a scroll
       if (Math.abs(dx) < 8) return;
       d.active = true;
+      if (openSwipe && openSwipe !== this) openSwipe.close(true);
       this.front.setPointerCapture?.(d.id);
     }
     let x = d.base + dx;
