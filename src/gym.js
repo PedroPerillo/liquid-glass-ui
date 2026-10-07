@@ -51,6 +51,10 @@ function parseNumber(raw) {
   return Number(s);
 }
 
+/** Escape text for use inside markup or a quoted attribute. */
+const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ESC[c]);
+
 function numAttr(el, name, fallback) {
   const v = parseNumber(el.getAttribute(name));
   return Number.isFinite(v) ? v : fallback;
@@ -213,6 +217,7 @@ class OgStepper extends HTMLElement {
     this.setAttribute('value', String(next));
     this._reflecting = false;
     this._draft = null;
+    this.removeAttribute('invalid');
     this.sync();
     if (next !== prev) {
       fire(this, 'input', { value: next });
@@ -224,7 +229,7 @@ class OgStepper extends HTMLElement {
   stepBy(dir, times = 1) {
     if (this.disabled) return;
     const base = this._draft != null && Number.isFinite(parseNumber(this._draft)) ? parseNumber(this._draft) : this.value;
-    // Snap onto the step grid first, so 77.3 + 2.5 lands on 80 rather than 79.8.
+    // Snap onto the step grid first, so + from 77.3 lands on the next mark, 77.5, rather than 79.8.
     const s = this.step;
     const origin = Number.isFinite(this.min) ? this.min : 0;
     const k = (base - origin) / s;
@@ -414,7 +419,7 @@ class OgRestTimer extends HTMLElement {
     this._left = s;
     this._end = Date.now() + s * 1000;
     this._state = 'running';
-    this.loop();
+    if (this.isConnected) this.loop(); // otherwise connectedCallback starts it
     this.render();
     fire(this, 'rest-start', { seconds: s });
   }
@@ -432,7 +437,7 @@ class OgRestTimer extends HTMLElement {
     if (this._state !== 'paused') return;
     this._end = Date.now() + this._left * 1000;
     this._state = 'running';
-    this.loop();
+    if (this.isConnected) this.loop();
     this.render();
   }
 
@@ -479,8 +484,10 @@ class OgRestTimer extends HTMLElement {
     this._left = 0;
     this._state = 'ready';
     this.render();
-    this.els.live.textContent = 'Rest over';
-    setTimeout(() => { if (this.els) this.els.live.textContent = ''; }, 3000);
+    if (this.els) {
+      this.els.live.textContent = 'Rest over';
+      setTimeout(() => { this.els.live.textContent = ''; }, 3000);
+    }
     if (navigator.vibrate && !this.hasAttribute('silent')) navigator.vibrate([120, 60, 120]);
     fire(this, 'rest-end', { skipped: false });
   }
@@ -489,19 +496,25 @@ class OgRestTimer extends HTMLElement {
     if (!this._built) return;
     const { bar, time, label, toggle, skip, sub } = this.els;
     const st = this._state;
-    this.dataset.state = st;
     const left = Math.max(0, this._left);
-    time.textContent = st === 'ready' ? 'Ready' : clock(Math.ceil(left));
+    // This runs four times a second while counting, so only touch what changed: every DOM
+    // write would also wake liquid-glass's page-wide MutationObserver.
+    const text = (el, v) => { if (el.textContent !== v) el.textContent = v; };
+    const flag = (el, on) => { if (el.disabled !== on) el.disabled = on; };
+    text(time, st === 'ready' ? 'Ready' : clock(Math.ceil(left)));
     const base = this.getAttribute('label') || 'Rest';
-    label.textContent = st === 'paused' ? 'Paused' : st === 'idle' ? `${base} · ${clock(this._total)}` : base;
-    bar.style.setProperty('--p', st === 'idle' ? 1 : this._total ? left / this._total : 0);
+    text(label, st === 'paused' ? 'Paused' : st === 'idle' ? `${base} · ${clock(this._total)}` : base);
+    const p = String(st === 'idle' ? 1 : this._total ? Math.round((left / this._total) * 1000) / 1000 : 0);
+    if (bar.style.getPropertyValue('--p') !== p) bar.style.setProperty('--p', p);
+    flag(sub, st === 'idle' ? this._left <= 15 : st === 'ready');
+    if (this.dataset.state === st) return;
+    this.dataset.state = st;
     const playing = st === 'running';
     toggle.innerHTML = playing ? ICONS.pause : ICONS.play;
     // Ready keeps the button (as "start again") so the row never reflows under a thumb.
     toggle.setAttribute('aria-label', playing ? 'Pause' : st === 'paused' ? 'Resume' : st === 'ready' ? 'Start again' : 'Start rest');
     skip.innerHTML = `<span>${st === 'ready' ? 'Dismiss' : 'Skip'}</span>`;
-    skip.disabled = st === 'idle';
-    sub.disabled = st === 'idle' ? this._left <= 15 : st === 'ready';
+    flag(skip, st === 'idle');
   }
 }
 
@@ -576,7 +589,7 @@ class OgHeatmap extends HTMLElement {
         const v = Number(data[key]) || 0;
         if (v > 0) active++;
         const future = day > today;
-        const title = `${key}${v > 0 ? ` · ${v}${unit ? ` ${unit}` : ''}` : ''}`;
+        const title = esc(`${key}${v > 0 ? ` · ${v}${unit ? ` ${unit}` : ''}` : ''}`);
         cells += `<i class="og-hm__c" data-l="${level(v)}" data-date="${key}"${v > 0 ? ` data-value="${v}"` : ''}${key === todayKey ? ' data-today' : ''}${future ? ' data-future' : ''} title="${title}"></i>`;
       }
       cols.push(cells);
@@ -586,8 +599,8 @@ class OgHeatmap extends HTMLElement {
       return `<span>${dow === 1 || dow === 3 || dow === 5 ? DAYS[dow] : ''}</span>`;
     }).join('');
 
-    const less = this.getAttribute('less-label') || 'Less';
-    const more = this.getAttribute('more-label') || 'More';
+    const less = esc(this.getAttribute('less-label') || 'Less');
+    const more = esc(this.getAttribute('more-label') || 'More');
     this.setAttribute('role', 'img');
     this.setAttribute('aria-label', `${this.getAttribute('label') || 'Activity'}: ${active} active ${active === 1 ? 'day' : 'days'} in the last ${weeks} weeks`);
     this.innerHTML = `
@@ -689,7 +702,7 @@ class OgLineChart extends HTMLElement {
     const pts = this.series();
     this._pts = pts;
     if (!pts.length) {
-      this.innerHTML = `<div class="og-lc__empty">${this.getAttribute('empty-label') || 'No data yet'}</div>`;
+      this.innerHTML = `<div class="og-lc__empty">${esc(this.getAttribute('empty-label') || 'No data yet')}</div>`;
       this._xs = [];
       this.setAttribute('aria-label', 'Chart: no data yet');
       return;
@@ -834,7 +847,10 @@ class OgSwipeRow extends HTMLElement {
     pane.className = `og-swipe__pane og-swipe__pane--${kind}`;
     const b = document.createElement('button');
     b.type = 'button';
-    b.innerHTML = `${svg}<span>${label}</span>`;
+    b.innerHTML = svg;
+    const text = document.createElement('span');
+    text.textContent = label;
+    b.appendChild(text);
     b.addEventListener('click', () => this.commit(kind));
     pane.appendChild(b);
     return { pane, button: b };
@@ -1022,7 +1038,7 @@ class OgWheel extends HTMLElement {
   populate() {
     const n = this.count;
     let html = '<div class="og-wheel__pad"></div>';
-    for (let i = 0; i < n; i++) html += `<div class="og-wheel__item" data-i="${i}">${this.format(this.valueAt(i))}</div>`;
+    for (let i = 0; i < n; i++) html += `<div class="og-wheel__item" data-i="${i}">${esc(this.format(this.valueAt(i)))}</div>`;
     html += '<div class="og-wheel__pad"></div>';
     this.scroller.innerHTML = html;
     this.items = [...this.scroller.querySelectorAll('.og-wheel__item')];
@@ -1085,7 +1101,10 @@ class OgWheel extends HTMLElement {
 class OgElapsed extends HTMLElement {
   static get observedAttributes() { return ['start']; }
   connectedCallback() {
-    if (!this._start) this._start = this.hasAttribute('start') ? toDate(this.getAttribute('start')).getTime() : Date.now();
+    if (!Number.isFinite(this._start)) {
+      const t = this.hasAttribute('start') ? toDate(this.getAttribute('start')).getTime() : NaN;
+      this._start = Number.isFinite(t) ? t : Date.now(); // a bad start counts from now, never NaN:NaN
+    }
     this.tick();
     clearInterval(this._iv);
     this._iv = setInterval(() => this.tick(), 1000);
@@ -1096,7 +1115,11 @@ class OgElapsed extends HTMLElement {
     if (Number.isFinite(t)) { this._start = t; this.tick(); }
   }
   /** Restart from now (or from a given time). */
-  restart(start = Date.now()) { this._start = toDate(start).getTime(); this.tick(); }
+  restart(start = Date.now()) {
+    const t = toDate(start).getTime();
+    this._start = Number.isFinite(t) ? t : Date.now();
+    this.tick();
+  }
   tick() {
     const s = Math.max(0, Math.floor((Date.now() - this._start) / 1000));
     const h = Math.floor(s / 3600);
