@@ -24,6 +24,7 @@ export const supportsRefraction = (() => {
 })();
 
 let mode = 'liquid'; // 'liquid' | 'frost' | 'flat'
+const options = { blur: DEFAULT_BLUR, refraction: 1 }; // global defaults, see configure()
 let uid = 0;
 let defs = null;
 const surfaces = new Map(); // element -> state
@@ -126,7 +127,7 @@ function frostedValue(blur) {
 function render(el) {
   const s = surfaces.get(el);
   if (!s) return;
-  const blur = el.dataset.lgBlur != null ? +el.dataset.lgBlur : DEFAULT_BLUR;
+  const blur = el.dataset.lgBlur != null ? +el.dataset.lgBlur : options.blur;
   let value = '';
   if (mode === 'frost' || (mode === 'liquid' && !supportsRefraction)) {
     value = frostedValue(blur);
@@ -135,7 +136,8 @@ function render(el) {
     const H = Math.round(el.offsetHeight);
     if (!W || !H) return;
     const r = radiusOf(el, W, H);
-    const bend = el.dataset.lgBend != null ? +el.dataset.lgBend : Math.max(16, Math.min(60, H * 0.9));
+    const auto = Math.max(16, Math.min(60, H * 0.9));
+    const bend = (el.dataset.lgBend != null ? +el.dataset.lgBend : auto) * options.refraction;
     if (!s.filter) s.filter = createFilter(s.id);
     const f = s.filter;
     f.setAttribute('width', W);
@@ -195,6 +197,23 @@ export function setMode(next) {
 
 export function getMode() {
   return mode;
+}
+
+/**
+ * Change global defaults for every surface.
+ * @param {{blur?: number, refraction?: number}} next
+ *   blur: px of blur (default 10). refraction: multiplier on edge bending (default 1, 0 = none).
+ * Per-element data-lg-blur still wins; data-lg-bend is multiplied by refraction.
+ */
+export function configure(next = {}) {
+  if (typeof next.blur === 'number' && next.blur >= 0) options.blur = next.blur;
+  if (typeof next.refraction === 'number' && next.refraction >= 0) options.refraction = next.refraction;
+  refresh();
+  return { ...options };
+}
+
+export function getOptions() {
+  return { ...options };
 }
 
 /* ---------------- Toast ---------------- */
@@ -435,7 +454,7 @@ if (typeof window !== 'undefined') {
 }
 
 const LiquidGlass = {
-  attach, detach, refresh, setMode, getMode, toast, openSheet, closeSheet, supportsRefraction,
+  attach, detach, refresh, setMode, getMode, configure, getOptions, toast, openSheet, closeSheet, supportsRefraction,
 };
 if (typeof window !== 'undefined') window.LiquidGlass = LiquidGlass;
 export default LiquidGlass;

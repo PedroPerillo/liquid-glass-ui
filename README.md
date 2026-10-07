@@ -10,6 +10,8 @@ Apple-style Liquid Glass components for the web, plus two companion collections:
 | **Liquid Metal** | `liquid-metal.css` + optional `liquid-metal.js` | [`demo/metal.html`](demo/metal.html) |
 | **Gradients** | `gradients.css` (no JS) | [`demo/gradients.html`](demo/gradients.html) |
 
+Every demo page has a controls panel at the top to tune the look live and copy the code for your settings, and every snippet has a Copy button.
+
 Each one works on its own, and they're designed to be used together.
 
 ## Liquid Glass
@@ -21,7 +23,7 @@ A floating tab bar plus a matching set of components, with real edge refraction 
 - **Reduce Transparency**: solid surfaces, automatically.
 - **No build step, no framework.** One CSS file, one ES module. Works in plain HTML, React, Vue, Svelte, whatever.
 
-**Demo:** [`demo/index.html`](demo/index.html) (all glass components) or [`demo/preview.html`](demo/preview.html) (the original tab bar prototype).
+**Demo:** [`demo/index.html`](demo/index.html) (all glass components, with live controls) or [`demo/preview.html`](demo/preview.html) (the original tab bar prototype).
 
 ## Quick start
 
@@ -66,9 +68,10 @@ Any element with the `lg` class becomes a glass surface, including ones added la
 ## JavaScript API
 
 ```js
-import LiquidGlass, { setMode, toast, openSheet, supportsRefraction } from './src/liquid-glass.js';
+import LiquidGlass, { setMode, configure, toast, openSheet, supportsRefraction } from './src/liquid-glass.js';
 
 setMode('liquid');         // 'liquid' | 'frost' | 'flat'
+configure({ blur: 10, refraction: 1 });  // page-wide defaults; refraction is a multiplier (0 = off)
 toast('Expense added', { duration: 2500, icon: '<svg>…</svg>' });
 openSheet('#addSheet');
 LiquidGlass.attach(el);    // manual attach (usually automatic via .lg)
@@ -150,7 +153,21 @@ Chrome components whose rim flows like liquid metal. The rim is a rotating conic
 | Progress | `<div class="lm-progress" role="progressbar"><i style="--value:64%"></i></div>` |
 | Text | `<h1 class="lm-text">` (`lm-text--dark` on light backgrounds) |
 
-Variants: `lm--gold` (gold instead of chrome), `lm--light` (silver core for light pages), `lm--still` (no animation, good for long lists).
+Variants: `lm--gold` (gold instead of chrome), `lm--light` (silver core for light pages), `lm--still` (no animation, good for long lists). Variants also work on a container, so `<section class="lm--gold">` turns everything inside gold.
+
+Tuning:
+
+```css
+:root {
+  --lm-speed-scale: 0.5;  /* lower = faster spin */
+  --lm-rim-scale: 1.5;    /* thicker rims */
+}
+```
+
+```js
+import { setFlow } from 'liquid-glass-ui/metal';
+setFlow(30); // ripple strength, default 22, 0 = none
+```
 
 Without the JS you still get animated chrome rims; the JS adds the liquid wobble, a highlight that follows the pointer, click ripples and the slider fill.
 

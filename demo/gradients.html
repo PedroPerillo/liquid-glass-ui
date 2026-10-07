@@ -26,6 +26,20 @@
 .row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
 .hero-text { font: 700 clamp(44px, 12vw, 88px)/1 var(--font-display); letter-spacing: -0.03em; margin: 0; }
 .grain-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.play { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+.play-preview { border-radius: 18px; min-height: 200px; display: flex; align-items: flex-end; overflow: hidden; }
+.play-preview .grad-card { flex: 1; min-height: 200px; }
+.play-preview .grad-card strong { font-family: var(--font-display); }
+.play-preview.is-text { align-items: center; justify-content: center; background: var(--bg); border: 1px solid var(--line); }
+.play-text { font: 800 clamp(48px, 9vw, 84px)/1 var(--font-display); letter-spacing: -0.03em; margin: 0; }
+.play-side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.preset-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.preset-seg button { display: inline-flex; align-items: center; gap: 6px; font: 600 13px var(--font-body); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px 5px 6px; cursor: pointer; }
+.preset-seg button i { width: 16px; height: 16px; border-radius: 50%; display: block; }
+.preset-seg button[aria-pressed="true"] { border-color: var(--fg); box-shadow: inset 0 0 0 1px var(--fg); }
+.preset-seg button:focus-visible { outline: 2px solid var(--lg-accent); outline-offset: 2px; }
+.toggles { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+@media (max-width: 700px) { .play { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -46,6 +60,31 @@
       <a href="#presets">Presets</a><a href="#animate">Animated</a><a href="#grain">Grain</a><a href="#text">Gradient text</a><a href="#combos">With glass and metal</a>
     </div>
   </header>
+
+  <section class="controls" id="controls" aria-label="Gradient playground">
+    <div class="controls-head">
+      <b>Playground</b>
+      <span style="display:flex;gap:8px"><button type="button" id="resetBtn">Reset</button><button type="button" data-collapse aria-expanded="true">Hide</button></span>
+    </div>
+    <div class="ctl-body">
+      <div class="play">
+        <div class="play-preview" id="playPreview"></div>
+        <div class="play-side">
+          <div class="preset-seg" id="presetSeg" role="group" aria-label="Preset"></div>
+          <div class="seg" id="shapeSeg" role="group" aria-label="Use as">
+            <button type="button" data-value="card" aria-pressed="true">Card</button>
+            <button type="button" data-value="bg" aria-pressed="false">Background</button>
+            <button type="button" data-value="text" aria-pressed="false">Text</button>
+          </div>
+          <div class="toggles">
+            <label class="ctl-check" for="animIn"><input id="animIn" type="checkbox"> Drift</label>
+            <label class="ctl-check" for="grainIn"><input id="grainIn" type="checkbox"> Grain</label>
+          </div>
+        </div>
+      </div>
+      <div class="ctl-code"><pre><code id="settingsCode"></code></pre></div>
+    </div>
+  </section>
 
   <section class="demo" id="presets">
     <h2>Presets</h2>
@@ -156,6 +195,50 @@ grid.addEventListener('click', async (e) => {
     sel.addRange(range);
     toast('Press Ctrl+C or ⌘C to copy');
   }
+});
+
+// ---------- Playground ----------
+import('./site.js').then(({ bindSeg, bindCollapse, addCopyButtons }) => {
+  const preview = document.getElementById('playPreview');
+  const code = document.getElementById('settingsCode');
+  const animIn = document.getElementById('animIn'), grainIn = document.getElementById('grainIn');
+  const presetSeg = document.getElementById('presetSeg');
+  const state = { preset: 'dusk', shape: 'card' };
+  presetSeg.innerHTML = presets.map(([n]) =>
+    `<button type="button" data-value="${n}" aria-pressed="${n === 'dusk'}"><i class="grad-${n}"></i>${n[0].toUpperCase() + n.slice(1)}</button>`).join('');
+
+  function render() {
+    const mods = [animIn.checked && 'grad--animate', grainIn.checked && state.shape !== 'text' && 'grad--grain'].filter(Boolean);
+    const cls = [`grad-${state.preset}`, ...mods];
+    grainIn.disabled = state.shape === 'text';
+    preview.className = 'play-preview' + (state.shape === 'text' ? ' is-text' : '');
+    let html;
+    if (state.shape === 'text') {
+      const c = [...cls, 'grad-text'].join(' ');
+      preview.innerHTML = `<p class="play-text ${c}">Budget</p>`;
+      html = `<h1 class="${c}">Budget</h1>`;
+    } else if (state.shape === 'bg') {
+      const c = cls.join(' ');
+      preview.innerHTML = `<div class="grad-card ${c}" style="border-radius:0"><small>Any element can take a preset</small></div>`;
+      html = `<body class="${c}">\n  …\n</body>`;
+    } else {
+      const c = [...cls, 'grad-card'].join(' ');
+      preview.innerHTML = `<div class="${c}"><small>Left to spend this month</small><strong>$1,284.60</strong></div>`;
+      html = `<div class="${c}">\n  <small>Left to spend this month</small>\n  <strong>$1,284.60</strong>\n</div>`;
+    }
+    code.textContent = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/PedroPerillo/liquid-glass-ui@main/src/gradients.css">\n\n${html}`;
+  }
+  bindSeg(presetSeg, (v) => { state.preset = v; render(); });
+  bindSeg(document.getElementById('shapeSeg'), (v) => { state.shape = v; render(); });
+  [animIn, grainIn].forEach((el) => el.addEventListener('input', render));
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    state.preset = 'dusk'; state.shape = 'card'; animIn.checked = false; grainIn.checked = false;
+    presetSeg.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === 'dusk')));
+    document.querySelectorAll('#shapeSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === 'card')));
+    render();
+  });
+  bindCollapse(document.getElementById('controls'));
+  render();
 });
 </script>
 </body>

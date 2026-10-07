@@ -125,6 +125,15 @@ export function init() {
   }).observe(document.body, { childList: true, subtree: true });
 }
 
+/**
+ * Set how strongly the rim ripples (SVG displacement scale). Default 22, 0 = no ripple.
+ */
+export function setFlow(scale) {
+  if (typeof document === 'undefined') return;
+  const map = document.querySelector('#lm-flow feDisplacementMap');
+  if (map && scale >= 0) map.setAttribute('scale', String(scale));
+}
+
 /** Re-sync a slider's fill after setting its value from code. */
 export function updateSlider(input) {
   paintSlider(input);
@@ -135,6 +144,6 @@ if (typeof window !== 'undefined') {
   else init();
 }
 
-const LiquidMetal = { init, updateSlider };
+const LiquidMetal = { init, setFlow, updateSlider };
 if (typeof window !== 'undefined') window.LiquidMetal = LiquidMetal;
 export default LiquidMetal;

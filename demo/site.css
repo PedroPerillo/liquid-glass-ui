@@ -54,3 +54,43 @@ footer a { color: var(--fg); }
   .top .lg-toolbar__title { display: none; }
   .site-nav { flex: 1; justify-content: space-between; }
 }
+
+/* ---------- Controls panel (top of each demo page) ---------- */
+.controls { display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 20px; background: var(--surface); border: 1px solid var(--line); z-index: 30; }
+.controls-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.controls-head b { font: 700 15px var(--font-display); }
+.controls-head button { font: 600 12px var(--font-body); color: var(--muted); background: none; border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+.controls-head button:focus-visible { outline: 2px solid var(--lg-accent); outline-offset: 2px; }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--bg); border-radius: 12px; padding: 3px; gap: 3px; }
+.seg button { font: 600 14px var(--font-body); color: var(--muted); background: transparent; border: 0; border-radius: 9px; padding: 8px 6px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 3px rgba(20, 30, 60, .18); }
+.seg button:focus-visible { outline: 2px solid var(--lg-accent); outline-offset: 1px; }
+.ctl-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 20px; }
+.ctl-row { display: grid; grid-template-columns: 84px minmax(0, 1fr) 52px; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+.ctl-row input[type="range"] { width: 100%; accent-color: var(--lg-accent); }
+.ctl-row output { font: 500 12px var(--font-mono); text-align: right; color: var(--fg); font-variant-numeric: tabular-nums; }
+.ctl-check { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+.ctl-status { font-size: 13px; color: var(--muted); }
+.ctl-status .pill { display: inline-block; font: 500 11px var(--font-mono); text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: 99px; margin-right: 6px; }
+.pill.ok { background: color-mix(in srgb, #1f9d63 18%, transparent); color: #1f9d63; }
+.pill.no { background: color-mix(in srgb, #d4433b 16%, transparent); color: #d4433b; }
+.ctl-code pre { font-size: 12px; min-height: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+details.ctl-code summary { cursor: pointer; font: 600 13px var(--font-body); color: var(--muted); width: max-content; padding: 2px 0; }
+details.ctl-code summary:hover { color: var(--fg); }
+details.ctl-code summary:focus-visible { outline: 2px solid var(--lg-accent); outline-offset: 2px; border-radius: 4px; }
+details.ctl-code[open] summary { margin-bottom: 10px; }
+.controls[data-collapsed] .ctl-body { display: none; }
+.ctl-body { display: flex; flex-direction: column; gap: 12px; }
+@media (min-width: 760px) and (min-height: 720px) {
+  .controls--sticky { position: sticky; top: calc(76px + env(safe-area-inset-top, 0px)); box-shadow: 0 12px 30px -18px rgba(20, 30, 60, .35); }
+}
+@media (max-width: 600px) {
+  .ctl-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------- Copy buttons on code blocks ---------- */
+.code-wrap { position: relative; min-width: 0; }
+.code-wrap pre { padding-right: 80px; }
+.copy-btn { position: absolute; top: 8px; right: 8px; font: 600 12px var(--font-body); color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+.copy-btn:hover { border-color: var(--muted); }
+.copy-btn:focus-visible { outline: 2px solid var(--lg-accent); outline-offset: 2px; }

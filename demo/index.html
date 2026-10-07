@@ -48,8 +48,6 @@ header.intro { display: flex; flex-direction: column; gap: 12px; padding-top: 18
 h1 { font: 700 clamp(32px, 7vw, 46px)/1.05 var(--font-display); letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
 h2 { font: 700 22px/1.2 var(--font-display); margin: 0; }
 .lede { color: var(--muted); margin: 0; max-width: 60ch; }
-.mode-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
-.status { font-size: 13px; color: var(--muted); }
 .pill { display: inline-block; font: 500 11px var(--font-mono); text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: 99px; margin-right: 6px; }
 .pill.ok { background: color-mix(in srgb, var(--good) 18%, transparent); color: var(--good); }
 .pill.no { background: color-mix(in srgb, var(--bad) 16%, transparent); color: var(--bad); }
@@ -114,18 +112,30 @@ footer a { color: var(--fg); }
   <header class="intro">
     <h1>Liquid Glass components for the web</h1>
     <p class="lede">A tab bar and a set of matching components with real edge refraction in Chromium, a frosted fallback in Safari and Firefox, and a solid fallback for Reduce Transparency. Plain HTML, one CSS file, one JS module.</p>
-    <div class="mode-row">
-      <lg-segmented id="modePicker" value="liquid" aria-label="Glass mode">
-        <button data-value="liquid">Liquid</button>
-        <button data-value="frost">Frosted</button>
-        <button data-value="flat">Flat</button>
-      </lg-segmented>
-      <span class="status" id="status"></span>
-    </div>
     <div class="toc">
       <a href="#tab-bar">Tab bar</a><a href="#segmented">Segmented</a><a href="#toolbar">Toolbar</a><a href="#buttons">Buttons</a><a href="#chips">Chips</a><a href="#search">Search</a><a href="#switch">Switch</a><a href="#card">Card</a><a href="#sheet">Sheet</a><a href="#toast">Toast</a><a href="./preview.html">Original prototype</a>
     </div>
   </header>
+
+  <section class="controls controls--sticky" id="controls" aria-label="Glass controls">
+    <div class="controls-head">
+      <b>Controls</b>
+      <span style="display:flex;gap:8px"><button type="button" id="resetBtn">Reset</button><button type="button" data-collapse aria-expanded="true">Hide</button></span>
+    </div>
+    <div class="ctl-body">
+      <div class="seg" id="modeSeg" role="group" aria-label="Glass mode">
+        <button type="button" data-value="flat" aria-pressed="false">Flat</button>
+        <button type="button" data-value="frost" aria-pressed="false">Frosted</button>
+        <button type="button" data-value="liquid" aria-pressed="true">Liquid</button>
+      </div>
+      <div class="ctl-grid">
+        <label class="ctl-row" for="blurIn">Blur <input id="blurIn" type="range" min="0" max="30" value="10"><output id="blurOut">10px</output></label>
+        <label class="ctl-row" for="bendIn">Refraction <input id="bendIn" type="range" min="0" max="200" step="5" value="100"><output id="bendOut">100%</output></label>
+      </div>
+      <div class="ctl-status" id="status"></div>
+      <details class="ctl-code"><summary>Code for these settings</summary><pre><code id="settingsCode"></code></pre></details>
+    </div>
+  </section>
 
   <section class="demo" id="tab-bar">
     <h2>Tab bar</h2>
@@ -307,18 +317,43 @@ toast('Expense added', { duration: 2500 });</code></pre>
 </lg-tab-bar>
 
 <script type="module">
-import LiquidGlass, { setMode, toast, supportsRefraction } from '../src/liquid-glass.js';
+import LiquidGlass, { setMode, configure, toast, supportsRefraction } from '../src/liquid-glass.js';
+import { bindSeg, bindCollapse } from './site.js';
 
 const status = document.getElementById('status');
-function showStatus(mode) {
+const blurIn = document.getElementById('blurIn'), bendIn = document.getElementById('bendIn');
+const blurOut = document.getElementById('blurOut'), bendOut = document.getElementById('bendOut');
+const settingsCode = document.getElementById('settingsCode');
+let mode = 'liquid';
+
+function render() {
+  const blur = +blurIn.value, refraction = +bendIn.value / 100;
+  blurOut.textContent = blur + 'px';
+  bendOut.textContent = bendIn.value + '%';
+  setMode(mode);
+  configure({ blur, refraction });
+  bendIn.disabled = mode !== 'liquid' || !supportsRefraction;
+  blurIn.disabled = mode === 'flat';
   if (mode === 'flat') status.innerHTML = '<span class="pill ok">Flat</span>Solid surfaces, what Reduce Transparency users see.';
-  else if (mode === 'frost') status.innerHTML = '<span class="pill ok">Frosted</span>Blur and saturation only.';
+  else if (mode === 'frost') status.innerHTML = '<span class="pill ok">Frosted</span>Blur and saturation only, the same look Safari gets.';
   else status.innerHTML = supportsRefraction
-    ? '<span class="pill ok">Refraction on</span>Chromium detected, edges bend for real.'
-    : '<span class="pill no">Frosted fallback</span>This browser can\'t refract the backdrop.';
+    ? '<span class="pill ok">Refraction on</span>This is a Chromium browser, so the SVG lens runs as a real backdrop filter.'
+    : '<span class="pill no">Frosted fallback</span>This browser can\'t refract the backdrop, so Liquid shows frosted glass.';
+  settingsCode.textContent = `import { setMode, configure } from 'liquid-glass-ui';
+
+setMode('${mode}');
+configure({ blur: ${blur}, refraction: ${refraction} });`;
 }
-document.getElementById('modePicker').addEventListener('change', (e) => { setMode(e.detail.value); showStatus(e.detail.value); });
-showStatus('liquid');
+bindSeg(document.getElementById('modeSeg'), (v) => { mode = v; render(); });
+blurIn.addEventListener('input', render);
+bendIn.addEventListener('input', render);
+document.getElementById('resetBtn').addEventListener('click', () => {
+  mode = 'liquid'; blurIn.value = 10; bendIn.value = 100;
+  document.querySelectorAll('#modeSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === 'liquid')));
+  render();
+});
+bindCollapse(document.getElementById('controls'));
+render();
 
 document.getElementById('mainTabs').addEventListener('change', (e) => {
   document.getElementById(e.detail.value)?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });

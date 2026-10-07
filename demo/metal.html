@@ -28,6 +28,10 @@
 .prog { width: min(100%, 360px); align-self: center; display: flex; flex-direction: column; gap: 8px; font: 600 13px var(--lm-font); }
 .prog span { display: flex; justify-content: space-between; color: #9aa0a9; }
 .big-text { font: 700 clamp(44px, 12vw, 84px)/1 var(--font-display); letter-spacing: -0.03em; margin: 0; text-align: center; }
+.lm-paused .lm::before, .lm-paused .lm-progress > i, .lm-paused .lm-text { animation-play-state: paused; }
+.ctl-segs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 20px; }
+.ctl-segs .seg-label { display: grid; grid-template-columns: 84px minmax(0, 1fr); align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+@media (max-width: 600px) { .ctl-segs { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -48,6 +52,36 @@
       <a href="#buttons">Buttons</a><a href="#chips">Chips</a><a href="#card">Card</a><a href="#ring">Ring</a><a href="#switch">Switch</a><a href="#slider">Slider</a><a href="#progress">Progress</a><a href="#text">Text</a><a href="#variants">Variants</a>
     </div>
   </header>
+
+  <section class="controls controls--sticky" id="controls" aria-label="Metal controls">
+    <div class="controls-head">
+      <b>Controls</b>
+      <span style="display:flex;gap:8px"><button type="button" id="resetBtn">Reset</button><button type="button" data-collapse aria-expanded="true">Hide</button></span>
+    </div>
+    <div class="ctl-body">
+      <div class="ctl-segs">
+        <div class="seg-label">Finish
+          <div class="seg" id="finishSeg" role="group" aria-label="Finish">
+            <button type="button" data-value="chrome" aria-pressed="true">Chrome</button>
+            <button type="button" data-value="gold" aria-pressed="false">Gold</button>
+          </div>
+        </div>
+        <div class="seg-label">Core
+          <div class="seg" id="coreSeg" role="group" aria-label="Core">
+            <button type="button" data-value="dark" aria-pressed="true">Dark</button>
+            <button type="button" data-value="silver" aria-pressed="false">Silver</button>
+          </div>
+        </div>
+      </div>
+      <div class="ctl-grid">
+        <label class="ctl-row" for="speedIn">Spin speed <input id="speedIn" type="range" min="0.25" max="3" step="0.25" value="1"><output id="speedOut">1×</output></label>
+        <label class="ctl-row" for="rimIn">Rim width <input id="rimIn" type="range" min="0.5" max="2.5" step="0.25" value="1"><output id="rimOut">1×</output></label>
+        <label class="ctl-row" for="flowIn">Ripple <input id="flowIn" type="range" min="0" max="50" value="22"><output id="flowOut">22</output></label>
+        <label class="ctl-check" for="animIn"><input id="animIn" class="lm-switch" type="checkbox" checked> Animate</label>
+      </div>
+      <details class="ctl-code"><summary>Code for these settings</summary><pre><code id="settingsCode"></code></pre></details>
+    </div>
+  </section>
 
   <section class="demo" id="buttons">
     <h2>Buttons</h2>
@@ -182,6 +216,51 @@
 <script type="module">
 import '../src/liquid-glass.js';
 import '../src/liquid-metal.js';
+import { setFlow } from '../src/liquid-metal.js';
+import { bindSeg, bindCollapse } from './site.js';
+
+const root = document.documentElement;
+const stages = [...document.querySelectorAll('.mstage')].filter((el) => !el.closest('#variants'));
+const speedIn = document.getElementById('speedIn'), rimIn = document.getElementById('rimIn');
+const flowIn = document.getElementById('flowIn'), animIn = document.getElementById('animIn');
+const settingsCode = document.getElementById('settingsCode');
+let finish = 'chrome', core = 'dark';
+
+function render() {
+  const speed = +speedIn.value, rim = +rimIn.value, flow = +flowIn.value;
+  const speedScale = +(1 / speed).toFixed(2);
+  document.getElementById('speedOut').textContent = speed + '×';
+  document.getElementById('rimOut').textContent = rim + '×';
+  document.getElementById('flowOut').textContent = flow;
+  root.style.setProperty('--lm-speed-scale', speedScale);
+  root.style.setProperty('--lm-rim-scale', rim);
+  setFlow(flow);
+  document.body.classList.toggle('lm-paused', !animIn.checked);
+  stages.forEach((st) => {
+    st.classList.toggle('lm--gold', finish === 'gold');
+    st.classList.toggle('lm--light', core === 'silver');
+  });
+  const cls = [finish === 'gold' && 'lm--gold', core === 'silver' && 'lm--light'].filter(Boolean);
+  settingsCode.textContent = `/* CSS: page-wide tuning */
+:root {
+  --lm-speed-scale: ${speedScale};  /* lower = faster spin */
+  --lm-rim-scale: ${rim};
+}
+${cls.length ? `\n<!-- put on any container (or a single component) -->\n<div class="${cls.join(' ')}">…</div>\n` : ''}
+// JS: ripple strength (default 22)
+import { setFlow } from 'liquid-glass-ui/metal';
+setFlow(${flow});`;
+}
+bindSeg(document.getElementById('finishSeg'), (v) => { finish = v; render(); });
+bindSeg(document.getElementById('coreSeg'), (v) => { core = v; render(); });
+[speedIn, rimIn, flowIn, animIn].forEach((el) => el.addEventListener('input', render));
+document.getElementById('resetBtn').addEventListener('click', () => {
+  finish = 'chrome'; core = 'dark'; speedIn.value = 1; rimIn.value = 1; flowIn.value = 22; animIn.checked = true;
+  document.querySelectorAll('#finishSeg button, #coreSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.value === 'chrome' || b.dataset.value === 'dark')));
+  render();
+});
+bindCollapse(document.getElementById('controls'));
+render();
 
 document.getElementById('chipStage').addEventListener('click', (e) => {
   const chip = e.target.closest('.lm-chip');

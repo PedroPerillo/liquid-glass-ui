@@ -13,6 +13,16 @@ export function refresh(el?: HTMLElement): void;
 export function setMode(mode: GlassMode): void;
 export function getMode(): GlassMode;
 
+export interface GlassOptions {
+  /** Blur in px. Default 10. */
+  blur?: number;
+  /** Multiplier on edge refraction. Default 1, 0 turns bending off. */
+  refraction?: number;
+}
+/** Change global defaults for every glass surface. */
+export function configure(options: GlassOptions): Required<GlassOptions>;
+export function getOptions(): Required<GlassOptions>;
+
 export interface ToastOptions {
   /** Milliseconds before the toast leaves. Default 2600. */
   duration?: number;
@@ -35,6 +45,8 @@ declare const LiquidGlass: {
   refresh: typeof refresh;
   setMode: typeof setMode;
   getMode: typeof getMode;
+  configure: typeof configure;
+  getOptions: typeof getOptions;
   toast: typeof toast;
   openSheet: typeof openSheet;
   closeSheet: typeof closeSheet;

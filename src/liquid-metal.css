@@ -23,10 +23,11 @@
 
 /* ---------- Tokens ---------- */
 :root {
-  --lm-metal: conic-gradient(from var(--lm-angle),
+  /* Color stops only: the angle is applied on ::before so it can animate */
+  --lm-stops:
     #f2f4f7 0deg, #9aa1ab 30deg, #ffffff 58deg, #3f454e 95deg, #cfd4db 130deg,
     #fff0f3 160deg, #7d848e 200deg, #eef1f5 235deg, #2e333a 275deg,
-    #dde7ff 310deg, #a7aeb8 335deg, #f2f4f7 360deg);
+    #dde7ff 310deg, #a7aeb8 335deg, #f2f4f7 360deg;
   --lm-bar: linear-gradient(90deg,
     #6f7680 0%, #e9ecf0 18%, #8a919b 34%, #ffffff 50%, #757c86 66%, #dfe3e8 82%, #6f7680 100%);
   --lm-core: linear-gradient(180deg, #24272c 0%, #0b0c0e 100%);
@@ -39,6 +40,8 @@
   --lm-rim: 2px;
   --lm-r: 16px;
   --lm-speed: 7s;
+  --lm-speed-scale: 1;  /* global multipliers, handy for tuning a whole page */
+  --lm-rim-scale: 1;
   --lm-boost: 1;
   --lm-font: system-ui, -apple-system, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   --lm-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -46,10 +49,10 @@
 
 /* Gold variant */
 .lm--gold {
-  --lm-metal: conic-gradient(from var(--lm-angle),
+  --lm-stops:
     #fff4d6 0deg, #b8862f 30deg, #fffaf0 58deg, #6b4a12 95deg, #f1d38a 130deg,
     #fff6e0 160deg, #a87a2a 200deg, #ffe9b0 235deg, #5a3d0e 275deg,
-    #f7dc95 310deg, #c3953d 335deg, #fff4d6 360deg);
+    #f7dc95 310deg, #c3953d 335deg, #fff4d6 360deg;
   --lm-bar: linear-gradient(90deg,
     #8d6620 0%, #ffe9b0 18%, #a87a2a 34%, #fffaf0 50%, #9b7024 66%, #f1d38a 82%, #8d6620 100%);
   --lm-focus: #f1d38a;
@@ -79,8 +82,8 @@
   position: absolute;
   inset: -14px;
   z-index: -2;
-  background: var(--lm-metal);
-  animation: lm-spin var(--lm-speed) linear infinite;
+  background: conic-gradient(from var(--lm-angle), var(--lm-stops));
+  animation: lm-spin calc(var(--lm-speed) * var(--lm-speed-scale)) linear infinite;
   filter: brightness(var(--lm-boost));
   transition: filter 0.3s;
 }
@@ -91,9 +94,9 @@
 .lm::after {
   content: "";
   position: absolute;
-  inset: var(--lm-rim);
+  inset: calc(var(--lm-rim) * var(--lm-rim-scale));
   z-index: -1;
-  border-radius: max(0px, calc(var(--lm-r) - var(--lm-rim)));
+  border-radius: max(0px, calc(var(--lm-r) - var(--lm-rim) * var(--lm-rim-scale)));
   background:
     radial-gradient(120% 90% at var(--lm-x, 50%) var(--lm-y, 0%), var(--lm-core-hi), transparent 62%),
     var(--lm-core);
@@ -221,7 +224,7 @@
   --lm-rim: 3px;
   display: inline-grid;
   place-items: center;
-  padding: var(--lm-rim);
+  padding: calc(var(--lm-rim) * var(--lm-rim-scale));
   flex: none;
 }
 .lm-ring > img {
