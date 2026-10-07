@@ -1,5 +1,7 @@
 # liquid-glass-ui
 
+**Live site: [liquid-glass-ui-ruby.vercel.app](https://liquid-glass-ui-ruby.vercel.app)**
+
 Apple-style Liquid Glass components for the web, plus two companion collections:
 
 | Collection | Files | Demo |
@@ -181,7 +183,7 @@ Modifiers: `grad--animate` (slow drifting light), `grad--grain` (film grain, use
 npm run dev   # serves the repo at http://localhost:5173/demo/
 ```
 
-GitHub Pages: enable Pages on the `main` branch (root) and the demo is live at `https://pedroperillo.github.io/liquid-glass-ui/`.
+Deployed on Vercel from `main`: every push redeploys [liquid-glass-ui-ruby.vercel.app](https://liquid-glass-ui-ruby.vercel.app).
 
 ## License
 
