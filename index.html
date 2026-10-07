@@ -2,10 +2,314 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="refresh" content="0; url=./demo/">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>liquid-glass-ui</title>
+<meta name="description" content="Apple-style Liquid Glass and Liquid Metal components for the web, plus mesh gradient backgrounds. Plain HTML and CSS, no build step.">
+<meta property="og:title" content="liquid-glass-ui">
+<meta property="og:description" content="Liquid Glass, Liquid Metal and mesh gradients for the web. Real refraction in Chromium, graceful fallbacks everywhere.">
+<meta name="theme-color" content="#eef1f6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1017" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff9a3c'/%3E%3Cstop offset='.45' stop-color='%23ff3d7f'/%3E%3Cstop offset='1' stop-color='%235b2bff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='4' y='18' width='56' height='28' rx='14' fill='url(%23g)'/%3E%3Crect x='8' y='22' width='22' height='20' rx='10' fill='%23fff' fill-opacity='.55'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="./src/liquid-glass.css">
+<link rel="stylesheet" href="./src/liquid-metal.css">
+<link rel="stylesheet" href="./src/gradients.css">
+<link rel="stylesheet" href="./demo/site.css">
+<style>
+/* Layout: text-led hero beside a live phone, then three collection cards with working previews, then setup. */
+.wrap { max-width: 1120px; gap: 72px; padding-block: 12px 64px; }
+.top .site-nav a.gh { display: inline-flex; align-items: center; gap: 6px; }
+.top .site-nav a.gh svg { width: 16px; height: 16px; }
+
+/* Hero */
+.hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 48px; align-items: center; padding-top: 28px; }
+.eyebrow { font: 500 12px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; }
+.hero h1 { font: 800 clamp(40px, 6.4vw, 76px)/0.98 var(--font-display); letter-spacing: -0.035em; margin: 0; text-wrap: balance; }
+.hero h1 .glassy { font-weight: 800; }
+.hero .lede { font-size: 17px; margin-top: 20px; max-width: 46ch; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; align-items: center; }
+.cta .lg-button { text-decoration: none; }
+.cta .install { font: 500 13px var(--font-mono); color: var(--muted); }
+
+/* The phone */
+.phone { position: relative; justify-self: center; width: min(100%, 340px); aspect-ratio: 340 / 640; max-height: 640px; border-radius: 48px; padding: 10px;
+  background: linear-gradient(160deg, #3a3f47, #0f1114); box-shadow: 0 40px 80px -30px rgba(20, 30, 60, .45), inset 0 0 0 1.5px rgba(255,255,255,.12); }
+.screen { position: relative; height: 100%; border-radius: 39px; overflow: hidden; background: var(--bg); }
+.feed { position: absolute; inset: 0; overflow-y: auto; padding: 46px 14px 110px; display: flex; flex-direction: column; gap: 12px; scrollbar-width: none; }
+.feed::-webkit-scrollbar { display: none; }
+.feed > * { flex-shrink: 0; }
+.feed .grad-card { min-height: 140px; }
+.feed .grad-card strong { font-family: var(--font-display); }
+.feed-label { font: 500 10.5px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 6px 2px -4px; }
+.mini-cats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mini-cats div { border-radius: 16px; padding: 12px; min-height: 84px; display: flex; flex-direction: column; justify-content: space-between; font: 600 13px var(--font-body); }
+.mini-cats b { font: 700 20px var(--font-display); font-variant-numeric: tabular-nums; }
+.stripes { height: 96px; border-radius: 16px; background: repeating-linear-gradient(90deg, var(--fg) 0 2px, transparent 2px 20px), repeating-linear-gradient(0deg, #2f6bff 0 2px, transparent 2px 20px), var(--surface); border: 1px solid var(--line); }
+.screen lg-tab-bar { position: absolute; left: 12px; right: 12px; bottom: 14px; height: 62px; }
+.screen lg-tab-bar .lg-ind { height: 50px; }
+.notch { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 96px; height: 28px; border-radius: 16px; background: #0b0c0e; z-index: 5; }
+.scroll-hint { font: 500 12px var(--font-mono); color: var(--muted); text-align: center; margin-top: 14px; }
+
+/* Section heads */
+.sec-head { display: flex; flex-direction: column; gap: 8px; max-width: 62ch; }
+.sec-head h2 { font: 800 clamp(28px, 4vw, 40px)/1.05 var(--font-display); letter-spacing: -0.025em; }
+.sec-head p { margin: 0; color: var(--muted); }
+
+/* Collections */
+.collections { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 28px; }
+.col { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 26px; overflow: hidden; }
+.col-stage { height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 18px; }
+.col-body { display: flex; flex-direction: column; gap: 8px; padding: 18px 20px 20px; flex: 1; }
+.col-body h3 { margin: 0; font: 700 21px var(--font-display); }
+.col-body p { margin: 0; color: var(--muted); font-size: 14.5px; }
+.col-body .meta { font: 500 12px var(--font-mono); color: var(--muted); margin-top: auto; padding-top: 10px; }
+.col-link { align-self: flex-start; margin-top: 6px; font: 600 14px var(--font-body); color: var(--fg); text-decoration: none; border-bottom: 1.5px solid currentColor; padding-bottom: 1px; }
+.col-link:hover { opacity: .75; }
+.chip-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.metal-stage { background: radial-gradient(120% 100% at 50% 0%, #2c3037 0%, #0a0b0d 72%); color: #eef0f3; }
+.metal-row { display: flex; align-items: center; gap: 14px; }
+.mosaic { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; height: 100%; }
+.mosaic span { border-radius: 14px; }
+
+/* Quick start */
+.qs { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 32px; align-items: start; }
+.qs-code { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.qs-code lg-segmented { align-self: flex-start; }
+.code-wrap { position: relative; }
+.code-wrap pre { padding-right: 84px; min-height: 150px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.copy-btn { position: absolute; top: 10px; right: 10px; font: 600 12px var(--font-body); color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+.copy-btn:focus-visible { outline: 2px solid var(--lg-accent); outline-offset: 2px; }
+.steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; counter-reset: s; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 28px 1fr; gap: 12px; color: var(--muted); }
+.steps li::before { content: counter(s); font: 700 13px var(--font-mono); width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); border: 1px solid var(--line); color: var(--fg); }
+.steps b { color: var(--fg); font-weight: 600; }
+
+/* Principles */
+.principles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; margin-top: 24px; }
+.principles div { border-top: 2px solid var(--fg); padding-top: 14px; }
+.principles h3 { margin: 0 0 6px; font: 700 17px var(--font-display); }
+.principles p { margin: 0; color: var(--muted); font-size: 14px; }
+
+.site-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); padding-top: 22px; color: var(--muted); font-size: 13px; }
+.site-foot a { color: var(--fg); }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; gap: 36px; }
+  .collections { grid-template-columns: 1fr; }
+  .qs { grid-template-columns: 1fr; }
+  .principles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .wrap { gap: 56px; }
+  .principles { grid-template-columns: 1fr; }
+  .top .site-nav a.gh span { display: none; }
+}
+</style>
 </head>
 <body>
-<a href="./demo/">Open the component demo</a>
+<div class="wrap">
+  <nav class="lg lg-toolbar top" data-sticky aria-label="Site">
+    <span class="lg-toolbar__title">liquid-glass-ui</span>
+    <div class="site-nav">
+      <a href="./demo/index.html">Glass</a>
+      <a href="./demo/metal.html">Metal</a>
+      <a href="./demo/gradients.html">Gradients</a>
+      <a class="gh" href="https://github.com/PedroPerillo/liquid-glass-ui"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.1c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.9 1.3 1.9 1.3 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z"/></svg><span>GitHub</span></a>
+    </div>
+  </nav>
+
+  <section class="hero" aria-labelledby="heroTitle">
+    <div>
+      <p class="eyebrow">Open source · MIT · No build step</p>
+      <h1 id="heroTitle">Liquid Glass for the <span class="grad-dusk grad-text grad--animate glassy">web</span>, with metal and gradients to match.</h1>
+      <p class="lede">A floating tab bar, sheets, toasts and a dozen more components that bend light like Apple's Liquid Glass. Chrome components with a rim that flows like liquid metal. Mesh gradients to put behind all of it. One CSS file and one small module per collection.</p>
+      <div class="cta">
+        <a class="lm lm-button" href="#collections">Explore components</a>
+        <a class="lg lg-button" href="https://github.com/PedroPerillo/liquid-glass-ui">View on GitHub</a>
+      </div>
+    </div>
+    <div>
+      <div class="phone" role="img" aria-label="Live demo: a budgeting app feed scrolling under a Liquid Glass tab bar">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="feed" id="feed" tabindex="0" aria-label="Scroll the example feed">
+            <div class="grad-dusk grad-card"><small>Left to spend this month</small><strong>$1,284.60</strong></div>
+            <p class="feed-label">Refraction test</p>
+            <div class="stripes"></div>
+            <p class="feed-label">Categories</p>
+            <div class="mini-cats">
+              <div class="grad-mint">Groceries<b>$412</b></div>
+              <div class="grad-citrus">Gas<b>$96</b></div>
+              <div class="grad-orchid">Tithing<b>$310</b></div>
+              <div class="grad-ember">Eating out<b>$58</b></div>
+            </div>
+            <div class="grad-prism grad-card" style="min-height:100px"><small>Watch the bands bend at the bar's edge</small></div>
+            <div class="grad-lagoon grad-card"><small>Savings</small><strong>$2,300</strong></div>
+          </div>
+          <lg-tab-bar aria-label="Example tabs">
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18M16 14.5h2"/></svg>Budget</button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Insights</button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Me</button>
+          </lg-tab-bar>
+        </div>
+      </div>
+      <p class="scroll-hint" id="engineNote">Scroll inside the phone</p>
+    </div>
+  </section>
+
+  <section id="collections" aria-labelledby="colTitle">
+    <div class="sec-head">
+      <h2 id="colTitle">Three collections</h2>
+      <p>Each one works on its own. Every preview below is the real component, not a screenshot.</p>
+    </div>
+    <div class="collections">
+      <article class="col">
+        <div class="col-stage grad-lagoon">
+          <lg-segmented value="month" aria-label="Example range">
+            <button data-value="week">Week</button>
+            <button data-value="month">Month</button>
+            <button data-value="year">Year</button>
+          </lg-segmented>
+          <div class="chip-row">
+            <button class="lg lg-chip" aria-pressed="true">Groceries</button>
+            <button class="lg lg-chip" aria-pressed="false">Gas</button>
+          </div>
+        </div>
+        <div class="col-body">
+          <h3>Liquid Glass</h3>
+          <p>Tab bar, segmented control, toolbar, buttons, chips, search, switch, card, sheet and toast. Real edge refraction in Chromium, frosted glass in Safari and Firefox, solid for Reduce Transparency.</p>
+          <span class="meta">12 components · liquid-glass.css + .js</span>
+          <a class="col-link" href="./demo/index.html">Open the glass demo</a>
+        </div>
+      </article>
+
+      <article class="col">
+        <div class="col-stage metal-stage">
+          <button class="lm lm-button">Get started</button>
+          <div class="metal-row">
+            <button class="lm lm-icon-button lm--gold" aria-label="Star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg></button>
+            <input class="lm-switch" type="checkbox" checked aria-label="Example switch">
+            <button class="lm lm-chip" aria-pressed="true">Chrome</button>
+          </div>
+        </div>
+        <div class="col-body">
+          <h3>Liquid Metal</h3>
+          <p>Chrome buttons, chips, cards, rings, switch, slider, progress and text. The rim ripples like liquid metal using CSS and one SVG filter, so there's no WebGL and no limit on how many you use.</p>
+          <span class="meta">9 components · gold, silver, still variants</span>
+          <a class="col-link" href="./demo/metal.html">Open the metal demo</a>
+        </div>
+      </article>
+
+      <article class="col">
+        <div class="col-stage">
+          <div class="mosaic" aria-hidden="true">
+            <span class="grad-dusk"></span><span class="grad-mint"></span><span class="grad-lagoon"></span>
+            <span class="grad-citrus"></span><span class="grad-orchid"></span><span class="grad-ember"></span>
+            <span class="grad-midnight"></span><span class="grad-cotton"></span><span class="grad-prism"></span>
+          </div>
+        </div>
+        <div class="col-body">
+          <h3>Gradients</h3>
+          <p>Nine mesh gradient presets in pure CSS, each with a readable text color built in. Add slow drift, film grain or clip them to text. Dusk is the balance card that started this project.</p>
+          <span class="meta">9 presets · gradients.css · no JavaScript</span>
+          <a class="col-link" href="./demo/gradients.html">Open the gradients demo</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="qs" aria-labelledby="qsTitle">
+    <div class="sec-head">
+      <h2 id="qsTitle">Use it in two lines</h2>
+      <p>Drop the files in, or load them straight from GitHub through jsDelivr.</p>
+      <ol class="steps" style="margin-top:14px">
+        <li><span><b>Add the stylesheet and module</b> for the collection you want.</span></li>
+        <li><span><b>Add a class</b> like <code>lg</code>, <code>lm</code> or <code>grad-dusk</code> to your markup.</span></li>
+        <li><span><b>Put it over something colorful.</b> Glass needs a backdrop to bend.</span></li>
+      </ol>
+    </div>
+    <div class="qs-code">
+      <lg-segmented id="qsPick" value="glass" aria-label="Collection">
+        <button data-value="glass">Glass</button>
+        <button data-value="metal">Metal</button>
+        <button data-value="gradients">Gradients</button>
+      </lg-segmented>
+      <div class="code-wrap">
+        <pre><code id="qsCode"></code></pre>
+        <button class="copy-btn" id="qsCopy">Copy</button>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="whyTitle">
+    <div class="sec-head">
+      <h2 id="whyTitle">Built to hold up</h2>
+    </div>
+    <div class="principles">
+      <div><h3>No build step</h3><p>Plain CSS and ES modules. Works in HTML, React, Vue, Svelte or anything else.</p></div>
+      <div><h3>Real refraction</h3><p>Each glass surface gets its own displacement map, sized to its shape, in browsers that can render it.</p></div>
+      <div><h3>Graceful fallbacks</h3><p>Frosted glass where refraction isn't supported. Solid surfaces for Reduce Transparency. Still rims for Reduce Motion.</p></div>
+      <div><h3>Accessible</h3><p>Native buttons, dialogs, checkboxes and ranges underneath, with roles, keyboard support and visible focus.</p></div>
+    </div>
+  </section>
+
+  <footer class="site-foot">
+    <span>Made by Pedro Perillo · MIT license</span>
+    <span><a href="https://github.com/PedroPerillo/liquid-glass-ui">GitHub</a> · <a href="./demo/preview.html">Original prototype</a></span>
+  </footer>
+</div>
+
+<script type="module">
+import { supportsRefraction, toast } from './src/liquid-glass.js';
+import './src/liquid-metal.js';
+
+document.getElementById('engineNote').textContent = supportsRefraction
+  ? 'Scroll inside the phone. Your browser is rendering real refraction.'
+  : 'Scroll inside the phone. Open in Chrome to see real refraction.';
+
+document.querySelectorAll('.lg-chip, .lm-chip').forEach((chip) => {
+  chip.addEventListener('click', () => chip.setAttribute('aria-pressed', chip.getAttribute('aria-pressed') !== 'true'));
+});
+
+const base = 'https://cdn.jsdelivr.net/gh/PedroPerillo/liquid-glass-ui@main/src';
+const snippets = {
+  glass: `<link rel="stylesheet" href="${base}/liquid-glass.css">
+<script type="module" src="${base}/liquid-glass.js"><\/script>
+
+<lg-tab-bar floating>
+  <button>Home</button>
+  <button>Budget</button>
+</lg-tab-bar>`,
+  metal: `<link rel="stylesheet" href="${base}/liquid-metal.css">
+<script type="module" src="${base}/liquid-metal.js"><\/script>
+
+<button class="lm lm-button">Get started</button>`,
+  gradients: `<link rel="stylesheet" href="${base}/gradients.css">
+
+<div class="grad-dusk grad-card">
+  <small>Left to spend</small>
+  <strong>$1,284.60</strong>
+</div>`,
+};
+const code = document.getElementById('qsCode');
+const show = (k) => { code.textContent = snippets[k]; };
+show('glass');
+document.getElementById('qsPick').addEventListener('change', (e) => show(e.detail.value));
+document.getElementById('qsCopy').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(code.textContent);
+    toast('Copied to clipboard');
+  } catch {
+    const r = document.createRange();
+    r.selectNodeContents(code);
+    const s = getSelection();
+    s.removeAllRanges();
+    s.addRange(r);
+    toast('Press Ctrl+C or ⌘C to copy');
+  }
+});
+</script>
 </body>
 </html>
