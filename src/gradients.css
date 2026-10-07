@@ -1,0 +1,159 @@
+/*
+ * gradients (part of liquid-glass-ui)
+ * Mesh gradient backgrounds, built from layered radial gradients so they stay
+ * crisp at any size and cost nothing to load. "Dusk" is the original balance
+ * card from the tab bar prototype.
+ *
+ * Use a preset class on anything:  <div class="grad-dusk">…</div>
+ * Each preset sets --grad-fg / --grad-fg-muted so text on top stays readable.
+ *
+ * Modifiers:
+ *   .grad--animate  slow drifting light (respects reduced motion)
+ *   .grad--grain    film grain overlay (uses ::after)
+ *   .grad-text      clips the gradient to text instead
+ */
+
+/* ---------- Presets ---------- */
+.grad-dusk {
+  --grad-fg: #ffffff;
+  --grad-fg-muted: rgba(255, 255, 255, 0.82);
+  background-color: #5b2bff;
+  background-image:
+    radial-gradient(120% 90% at 10% 0%, #ff9a3c 0%, transparent 55%),
+    radial-gradient(90% 80% at 100% 20%, #ff3d7f 0%, transparent 60%),
+    linear-gradient(135deg, #5b2bff, #00b3ff);
+}
+.grad-mint {
+  --grad-fg: #ffffff;
+  --grad-fg-muted: rgba(255, 255, 255, 0.85);
+  background-color: #0ca678;
+  background-image:
+    radial-gradient(110% 90% at 0% 0%, #b8ffd9 0%, transparent 52%),
+    radial-gradient(90% 80% at 100% 10%, #3ee0b0 0%, transparent 60%),
+    radial-gradient(80% 70% at 60% 115%, #0a8f9e 0%, transparent 60%),
+    linear-gradient(135deg, #0ca678, #0b5f73);
+}
+.grad-lagoon {
+  --grad-fg: #ffffff;
+  --grad-fg-muted: rgba(255, 255, 255, 0.82);
+  background-color: #0891b2;
+  background-image:
+    radial-gradient(100% 80% at 15% 5%, #c6ff6b 0%, transparent 48%),
+    radial-gradient(90% 90% at 100% 0%, #22d3ee 0%, transparent 60%),
+    linear-gradient(150deg, #0891b2, #1e3a8a);
+}
+.grad-citrus {
+  --grad-fg: #2a1606;
+  --grad-fg-muted: rgba(42, 22, 6, 0.75);
+  background-color: #ffc83d;
+  background-image:
+    radial-gradient(100% 90% at 0% 0%, #fff27a 0%, transparent 55%),
+    radial-gradient(90% 80% at 100% 30%, #ff8a3d 0%, transparent 60%),
+    linear-gradient(135deg, #ffc83d, #ff6b6b);
+}
+.grad-orchid {
+  --grad-fg: #ffffff;
+  --grad-fg-muted: rgba(255, 255, 255, 0.82);
+  background-color: #7b2ff7;
+  background-image:
+    radial-gradient(110% 90% at 0% 100%, #ffb38a 0%, transparent 55%),
+    radial-gradient(90% 80% at 100% 0%, #ff4fd8 0%, transparent 60%),
+    linear-gradient(135deg, #7b2ff7, #b5179e);
+}
+.grad-ember {
+  --grad-fg: #ffffff;
+  --grad-fg-muted: rgba(255, 255, 255, 0.82);
+  background-color: #9d0208;
+  background-image:
+    radial-gradient(100% 90% at 100% 100%, #ffb703 0%, transparent 50%),
+    radial-gradient(90% 80% at 0% 0%, #ff4d3d 0%, transparent 60%),
+    linear-gradient(135deg, #9d0208, #3c096c);
+}
+.grad-midnight {
+  --grad-fg: #f1f3ff;
+  --grad-fg-muted: rgba(241, 243, 255, 0.72);
+  background-color: #0b1026;
+  background-image:
+    radial-gradient(80% 70% at 85% 10%, rgba(124, 92, 255, 0.8) 0%, transparent 60%),
+    radial-gradient(70% 70% at 0% 100%, rgba(0, 200, 180, 0.55) 0%, transparent 60%),
+    linear-gradient(160deg, #0b1026, #05060f);
+}
+.grad-cotton {
+  --grad-fg: #2b2440;
+  --grad-fg-muted: rgba(43, 36, 64, 0.7);
+  background-color: #f6f0ff;
+  background-image:
+    radial-gradient(100% 90% at 0% 0%, #ffd0e6 0%, transparent 55%),
+    radial-gradient(90% 80% at 100% 10%, #cfe0ff 0%, transparent 60%),
+    radial-gradient(80% 80% at 50% 120%, #e4d0ff 0%, transparent 60%),
+    linear-gradient(135deg, #fff1f7, #eef3ff);
+}
+.grad-prism {
+  --grad-fg: #ffffff;
+  --grad-fg-muted: rgba(255, 255, 255, 0.85);
+  background-color: #7b5cff;
+  background-image: linear-gradient(90deg,
+    #00c2a8 0 20%, #ffd23f 20% 40%, #ff5e5b 40% 60%, #7b5cff 60% 80%, #1b9aaa 80%);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+/* Any preset: readable text by default */
+:is(.grad-dusk, .grad-mint, .grad-lagoon, .grad-citrus, .grad-orchid,
+    .grad-ember, .grad-midnight, .grad-cotton, .grad-prism):not(.grad-text) {
+  color: var(--grad-fg);
+}
+
+/* ---------- Drifting light ---------- */
+.grad--animate {
+  background-size: 180% 180%;
+  animation: grad-drift 18s ease-in-out infinite alternate;
+}
+@keyframes grad-drift {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 30%; }
+  100% { background-position: 40% 100%; }
+}
+
+/* ---------- Grain ---------- */
+.grad--grain {
+  position: relative;
+  isolation: isolate;
+}
+.grad--grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.22;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- Gradient text ---------- */
+.grad-text {
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent; /* wins over any inherited color rule */
+}
+
+/* ---------- Ready-made card ---------- */
+.grad-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+  min-height: 150px;
+  padding: 18px;
+  border-radius: 22px;
+  color: var(--grad-fg);
+  font-family: system-ui, -apple-system, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+}
+.grad-card small { font-size: 13px; color: var(--grad-fg-muted); }
+.grad-card strong { font-size: 36px; line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+
+@media (prefers-reduced-motion: reduce) {
+  .grad--animate { animation: none; }
+}

@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Liquid Metal · liquid-glass-ui</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../src/liquid-glass.css">
+<link rel="stylesheet" href="../src/liquid-metal.css">
+<link rel="stylesheet" href="../src/gradients.css">
+<link rel="stylesheet" href="./site.css">
+<style>
+/* Metal reads best on dark, so stages stay graphite in both themes. */
+.mstage { border-radius: 26px; padding: 30px 18px; min-height: 150px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px;
+  background: radial-gradient(120% 100% at 50% 0%, #2c3037 0%, var(--stage) 70%); color: #eef0f3; }
+.mstage--light { background: radial-gradient(120% 100% at 50% 0%, #ffffff 0%, #d9dde3 80%); color: #1a1d22; }
+.mstage--col { flex-direction: column; align-items: stretch; }
+.mstage .lm-card { width: min(100%, 360px); align-self: center; }
+.bal-label { display: flex; justify-content: space-between; font: 600 13px var(--lm-font); color: var(--lm-fg-muted); }
+.bal { font: 700 40px/1.1 var(--font-display); font-variant-numeric: tabular-nums; margin: 8px 0 14px; display: block; }
+.card-actions { display: flex; gap: 10px; margin-top: 16px; }
+.card-actions .lm-button { flex: 1; }
+.avatar { width: 100%; height: 100%; border-radius: 50%; display: grid; place-items: center; font: 700 20px var(--font-display); }
+.set-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: min(100%, 360px); align-self: center; font: 600 15px var(--lm-font); }
+.slider-row { width: min(100%, 360px); align-self: center; display: grid; grid-template-columns: 1fr 56px; gap: 14px; align-items: center; font: 500 13px var(--font-mono); }
+.slider-row output { text-align: right; font-variant-numeric: tabular-nums; }
+.prog { width: min(100%, 360px); align-self: center; display: flex; flex-direction: column; gap: 8px; font: 600 13px var(--lm-font); }
+.prog span { display: flex; justify-content: space-between; color: #9aa0a9; }
+.big-text { font: 700 clamp(44px, 12vw, 84px)/1 var(--font-display); letter-spacing: -0.03em; margin: 0; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="lg lg-toolbar top" data-sticky aria-label="Collections">
+    <span class="lg-toolbar__title">liquid-glass-ui</span>
+    <div class="site-nav">
+      <a href="./index.html">Glass</a>
+      <a href="./metal.html" aria-current="page">Metal</a>
+      <a href="./gradients.html">Gradients</a>
+    </div>
+  </nav>
+
+  <header class="intro">
+    <h1>Liquid Metal</h1>
+    <p class="lede">Chrome components with a rim that flows like liquid. It's a rotating conic gradient pushed through an SVG noise filter, so there's no WebGL and no limit on how many you can put on a page. Rims pause while offscreen and stop for Reduce Motion.</p>
+    <div class="toc">
+      <a href="#buttons">Buttons</a><a href="#chips">Chips</a><a href="#card">Card</a><a href="#ring">Ring</a><a href="#switch">Switch</a><a href="#slider">Slider</a><a href="#progress">Progress</a><a href="#text">Text</a><a href="#variants">Variants</a>
+    </div>
+  </header>
+
+  <section class="demo" id="buttons">
+    <h2>Buttons</h2>
+    <p>Sizes come from padding, so labels of any length fit. They have a real focus ring, a press squish that works on touch, and a ripple. The highlight on the core follows your pointer.</p>
+    <div class="mstage">
+      <button class="lm lm-button lm-button--sm">Skip</button>
+      <button class="lm lm-button">Get started</button>
+      <button class="lm lm-button lm-button--lg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8L19 21l-.8-2.4-2-.8 2-.8z"/></svg>
+        Upgrade to Pro
+      </button>
+      <button class="lm lm-icon-button" aria-label="Sparkle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4z"/></svg>
+      </button>
+      <button class="lm lm-button" disabled>Disabled</button>
+    </div>
+<pre><code>&lt;button class="lm lm-button"&gt;Get started&lt;/button&gt;
+&lt;button class="lm lm-button lm-button--sm"&gt;Skip&lt;/button&gt;
+&lt;button class="lm lm-button lm-button--lg"&gt;&lt;svg&gt;…&lt;/svg&gt;Upgrade&lt;/button&gt;
+&lt;button class="lm lm-icon-button" aria-label="Sparkle"&gt;&lt;svg&gt;…&lt;/svg&gt;&lt;/button&gt;</code></pre>
+  </section>
+
+  <section class="demo" id="chips">
+    <h2>Chips</h2>
+    <p>Thinner rim, toggled with <code>aria-pressed</code>.</p>
+    <div class="mstage" id="chipStage">
+      <button class="lm lm-chip" aria-pressed="true">This month</button>
+      <button class="lm lm-chip" aria-pressed="false">Groceries</button>
+      <button class="lm lm-chip" aria-pressed="false">Gas</button>
+      <button class="lm lm-chip" aria-pressed="true">Recurring</button>
+    </div>
+<pre><code>&lt;button class="lm lm-chip" aria-pressed="false"&gt;Groceries&lt;/button&gt;</code></pre>
+  </section>
+
+  <section class="demo" id="card">
+    <h2>Card</h2>
+    <p>A framed panel with a slower rim. Pairs with metal text and the progress bar.</p>
+    <div class="mstage">
+      <div class="lm lm-card">
+        <div class="bal-label"><span>Left to spend</span><span>October</span></div>
+        <strong class="bal lm-text">$1,284.60</strong>
+        <div class="lm-progress" role="progressbar" aria-valuenow="64" aria-valuemin="0" aria-valuemax="100" aria-label="Budget used"><i style="--value:64%"></i></div>
+        <div class="card-actions">
+          <button class="lm lm-button lm-button--sm">Details</button>
+          <button class="lm lm-button lm-button--sm">Add expense</button>
+        </div>
+      </div>
+    </div>
+<pre><code>&lt;div class="lm lm-card"&gt;
+  &lt;strong class="lm-text"&gt;$1,284.60&lt;/strong&gt;
+  &lt;div class="lm-progress" role="progressbar"&gt;&lt;i style="--value:64%"&gt;&lt;/i&gt;&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+  </section>
+
+  <section class="demo" id="ring">
+    <h2>Ring</h2>
+    <p>A metal frame for avatars, app icons or badges. Put an <code>&lt;img&gt;</code> inside and it fills the ring. These use gradient presets from the gradients collection.</p>
+    <div class="mstage">
+      <span class="lm lm-ring" style="width:56px;height:56px"><span class="avatar grad-dusk">PP</span></span>
+      <span class="lm lm-ring" style="width:72px;height:72px"><span class="avatar grad-mint">MP</span></span>
+      <span class="lm lm-ring lm--gold" style="width:88px;height:88px;--lm-rim:4px"><span class="avatar grad-midnight" style="font-size:26px">★</span></span>
+    </div>
+<pre><code>&lt;span class="lm lm-ring" style="width:64px;height:64px"&gt;
+  &lt;img src="avatar.jpg" alt="Pedro"&gt;
+&lt;/span&gt;</code></pre>
+  </section>
+
+  <section class="demo" id="switch">
+    <h2>Switch</h2>
+    <p>A native checkbox with a chrome ball for a thumb. The reflection rolls as it slides.</p>
+    <div class="mstage mstage--col">
+      <label class="set-row" for="sw1">Round up to savings <input id="sw1" class="lm-switch" type="checkbox" checked></label>
+      <label class="set-row" for="sw2">Weekly summary <input id="sw2" class="lm-switch" type="checkbox"></label>
+    </div>
+<pre><code>&lt;input type="checkbox" class="lm-switch"&gt;</code></pre>
+  </section>
+
+  <section class="demo" id="slider">
+    <h2>Slider</h2>
+    <p>A native range input with a brushed-steel fill. With the JS loaded, the fill tracks the thumb.</p>
+    <div class="mstage mstage--col">
+      <label class="slider-row" for="sl1"><input id="sl1" class="lm-slider" type="range" min="0" max="2000" step="50" value="1250" aria-label="Monthly limit"><output id="sl1out">$1,250</output></label>
+    </div>
+<pre><code>&lt;input type="range" class="lm-slider" min="0" max="2000" value="1250"&gt;</code></pre>
+  </section>
+
+  <section class="demo" id="progress">
+    <h2>Progress</h2>
+    <p>A metal bar with a slow sheen. Set <code>--value</code> on the inner element.</p>
+    <div class="mstage mstage--col">
+      <div class="prog"><span><b>Groceries</b><span>$412 of $500</span></span><div class="lm-progress" role="progressbar" aria-valuenow="82" aria-valuemin="0" aria-valuemax="100" aria-label="Groceries budget"><i style="--value:82%"></i></div></div>
+      <div class="prog lm--gold"><span><b>Savings goal</b><span>$2,300 of $5,000</span></span><div class="lm-progress" role="progressbar" aria-valuenow="46" aria-valuemin="0" aria-valuemax="100" aria-label="Savings goal"><i style="--value:46%"></i></div></div>
+    </div>
+<pre><code>&lt;div class="lm-progress" role="progressbar" aria-valuenow="82"&gt;&lt;i style="--value:82%"&gt;&lt;/i&gt;&lt;/div&gt;</code></pre>
+  </section>
+
+  <section class="demo" id="text">
+    <h2>Text</h2>
+    <p>Polished steel lettering with a moving sheen. Use <code>lm-text--dark</code> on light backgrounds so it stays readable.</p>
+    <div class="mstage"><p class="big-text lm-text">Perillo</p></div>
+    <div class="mstage mstage--light"><p class="big-text lm-text lm-text--dark">Perillo</p></div>
+<pre><code>&lt;h1 class="lm-text"&gt;Perillo&lt;/h1&gt;
+&lt;h1 class="lm-text lm-text--dark"&gt;Perillo&lt;/h1&gt;  &lt;!-- on light backgrounds --&gt;</code></pre>
+  </section>
+
+  <section class="demo" id="variants">
+    <h2>Variants</h2>
+    <p><code>lm--gold</code> swaps the chrome for gold, and <code>lm--light</code> gives a silver core for light pages. Use <code>lm--still</code> to freeze a rim, which is handy in long lists.</p>
+    <div class="mstage">
+      <button class="lm lm-button lm--gold">Gold</button>
+      <button class="lm lm-icon-button lm--gold" aria-label="Star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg></button>
+      <button class="lm lm-button lm--still">Still</button>
+      <span class="lm-text lm--gold" style="font:700 28px var(--font-display)">$5,000</span>
+    </div>
+    <div class="mstage mstage--light">
+      <button class="lm lm-button lm--light">Silver</button>
+      <button class="lm lm-chip lm--light" aria-pressed="true">Active</button>
+      <button class="lm lm-chip lm--light" aria-pressed="false">Inactive</button>
+      <button class="lm lm-button lm--light lm--gold">Gold on silver</button>
+    </div>
+<pre><code>&lt;button class="lm lm-button lm--gold"&gt;Gold&lt;/button&gt;
+&lt;button class="lm lm-button lm--light"&gt;Silver&lt;/button&gt;
+&lt;button class="lm lm-button lm--still"&gt;No animation&lt;/button&gt;</code></pre>
+  </section>
+
+  <footer>
+    <span>Load <code>liquid-metal.css</code> for static chrome, add <code>liquid-metal.js</code> for the liquid flow, pointer highlight, ripples and slider fill.</span>
+    <span><a href="./index.html">Glass components</a> · <a href="./gradients.html">Gradient backgrounds</a></span>
+  </footer>
+</div>
+
+<script type="module">
+import '../src/liquid-glass.js';
+import '../src/liquid-metal.js';
+
+document.getElementById('chipStage').addEventListener('click', (e) => {
+  const chip = e.target.closest('.lm-chip');
+  if (chip) chip.setAttribute('aria-pressed', chip.getAttribute('aria-pressed') !== 'true');
+});
+const sl = document.getElementById('sl1'), out = document.getElementById('sl1out');
+const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+sl.addEventListener('input', () => { out.textContent = fmt.format(sl.value); });
+</script>
+</body>
+</html>

@@ -1,13 +1,25 @@
 # liquid-glass-ui
 
-Apple-style Liquid Glass components for the web. A floating tab bar plus a matching set of components, with real edge refraction in Chromium and graceful fallbacks everywhere else.
+Apple-style Liquid Glass components for the web, plus two companion collections:
+
+| Collection | Files | Demo |
+| --- | --- | --- |
+| **Liquid Glass** | `liquid-glass.css` + `liquid-glass.js` | [`demo/index.html`](demo/index.html) |
+| **Liquid Metal** | `liquid-metal.css` + optional `liquid-metal.js` | [`demo/metal.html`](demo/metal.html) |
+| **Gradients** | `gradients.css` (no JS) | [`demo/gradients.html`](demo/gradients.html) |
+
+Each one works on its own, and they're designed to be used together.
+
+## Liquid Glass
+
+A floating tab bar plus a matching set of components, with real edge refraction in Chromium and graceful fallbacks everywhere else.
 
 - **Chromium** (Chrome, Edge, Arc, Brave): real refraction. Each surface gets its own SVG displacement map, sized to it, used as a `backdrop-filter`.
 - **Safari / Firefox**: frosted glass (blur + saturate). Safari can't apply SVG filters to the backdrop yet.
 - **Reduce Transparency**: solid surfaces, automatically.
 - **No build step, no framework.** One CSS file, one ES module. Works in plain HTML, React, Vue, Svelte, whatever.
 
-**Demo:** open [`demo/index.html`](demo/index.html) (all components) or [`demo/preview.html`](demo/preview.html) (the original tab bar prototype).
+**Demo:** [`demo/index.html`](demo/index.html) (all glass components) or [`demo/preview.html`](demo/preview.html) (the original tab bar prototype).
 
 ## Quick start
 
@@ -27,6 +39,7 @@ Or from a CDN, straight from this repo:
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/PedroPerillo/liquid-glass-ui@main/src/liquid-glass.css">
 <script type="module" src="https://cdn.jsdelivr.net/gh/PedroPerillo/liquid-glass-ui@main/src/liquid-glass.js"></script>
+<!-- same pattern for liquid-metal.css, liquid-metal.js and gradients.css -->
 ```
 
 Any element with the `lg` class becomes a glass surface, including ones added later.
@@ -98,6 +111,7 @@ Custom elements work directly in React 19:
 ```jsx
 import 'liquid-glass-ui/style.css';
 import 'liquid-glass-ui';
+// also available: 'liquid-glass-ui/metal', 'liquid-glass-ui/metal.css', 'liquid-glass-ui/gradients.css'
 
 export function TabBar({ onChange }) {
   return (
@@ -110,6 +124,50 @@ export function TabBar({ onChange }) {
 ```
 
 On React 18, attach the listener with a ref and `addEventListener('change', …)`.
+
+## Liquid Metal
+
+Chrome components whose rim flows like liquid metal. The rim is a rotating conic gradient pushed through an SVG noise filter. There's no WebGL, so unlike shader-based metal buttons you can have as many as you want on a page, and rims pause while offscreen.
+
+```html
+<link rel="stylesheet" href="src/liquid-metal.css">
+<script type="module" src="src/liquid-metal.js"></script>  <!-- optional: liquid flow, pointer light, ripples -->
+
+<button class="lm lm-button">Get started</button>
+```
+
+| Component | Markup |
+| --- | --- |
+| Button | `<button class="lm lm-button">` (`lm-button--sm`, `lm-button--lg`) |
+| Icon button | `<button class="lm lm-icon-button" aria-label="…">` |
+| Chip | `<button class="lm lm-chip" aria-pressed="false">` |
+| Card | `<div class="lm lm-card">` |
+| Ring (avatars, icons) | `<span class="lm lm-ring" style="width:64px;height:64px"><img …></span>` |
+| Switch | `<input type="checkbox" class="lm-switch">` |
+| Slider | `<input type="range" class="lm-slider">` |
+| Progress | `<div class="lm-progress" role="progressbar"><i style="--value:64%"></i></div>` |
+| Text | `<h1 class="lm-text">` (`lm-text--dark` on light backgrounds) |
+
+Variants: `lm--gold` (gold instead of chrome), `lm--light` (silver core for light pages), `lm--still` (no animation, good for long lists).
+
+Without the JS you still get animated chrome rims; the JS adds the liquid wobble, a highlight that follows the pointer, click ripples and the slider fill.
+
+## Gradients
+
+Mesh gradient backgrounds made from layered radial gradients. Pure CSS, crisp at any size. **Dusk** is the balance card from the original prototype.
+
+```html
+<link rel="stylesheet" href="src/gradients.css">
+
+<div class="grad-dusk grad-card">
+  <small>Left to spend this month</small>
+  <strong>$1,284.60</strong>
+</div>
+```
+
+Presets: `grad-dusk`, `grad-mint`, `grad-lagoon`, `grad-citrus`, `grad-orchid`, `grad-ember`, `grad-midnight`, `grad-cotton`, `grad-prism`. Each sets `--grad-fg` and `--grad-fg-muted` so text on top stays readable.
+
+Modifiers: `grad--animate` (slow drifting light), `grad--grain` (film grain, uses `::after`), `grad-text` (clip the gradient to text), `grad-card` (ready-made balance card layout).
 
 ## Gotchas
 
