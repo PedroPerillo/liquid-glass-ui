@@ -1,0 +1,797 @@
+/*
+ * liquid-glass-ui · Gym kit
+ * Workout-tracker components ported from openGym
+ * (github.com/DuarteSantos8/openGym), rebuilt as plain CSS + custom elements.
+ *
+ * Every component has two skins:
+ *   - Solid: openGym's look. Neutral surfaces, hairlines, one accent colour.
+ *   - Glass: add the `lg` class (with liquid-glass.css + .js loaded) and the
+ *     component becomes a Liquid Glass surface. Anything inside a `.lg`
+ *     surface switches to glass-friendly fills automatically, so a stepper in
+ *     a glass card needs no extra class.
+ *
+ * The interactive parts (stepper, rest timer, heatmap, line chart, swipe row,
+ * wheel, elapsed clock) are custom elements defined in gym.js.
+ */
+
+/* ---------- Tokens ---------- */
+:root {
+  --og-acc: #28b14c;
+  --og-on-acc: #000000;
+  --og-red: #e5372c;
+  --og-orange: #f08c00;
+  --og-blue: #0a7aff;
+  --og-bg: #f2f2f7;
+  --og-surface: #ffffff;
+  --og-fill: #ececef;
+  --og-fill-2: #e1e1e6;
+  --og-label: #000000;
+  --og-label-2: rgba(60, 60, 67, 0.68);
+  --og-label-3: rgba(60, 60, 67, 0.36);
+  --og-sep: rgba(60, 60, 67, 0.22);
+  --og-radius: 14px;
+  --og-radius-sm: 10px;
+  --og-font: var(--lg-font, system-ui, -apple-system, "SF Pro Text", "Segoe UI", Roboto, sans-serif);
+  --og-ease: cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --og-acc: #30d158;
+    --og-red: #ff453a;
+    --og-orange: #ff9f0a;
+    --og-blue: #0a84ff;
+    --og-bg: #000000;
+    --og-surface: #1c1c1e;
+    --og-fill: #2c2c2e;
+    --og-fill-2: #3a3a3c;
+    --og-label: #ffffff;
+    --og-label-2: rgba(235, 235, 245, 0.62);
+    --og-label-3: rgba(235, 235, 245, 0.32);
+    --og-sep: rgba(84, 84, 88, 0.6);
+  }
+}
+:root[data-theme="dark"] {
+  --og-acc: #30d158;
+  --og-red: #ff453a;
+  --og-orange: #ff9f0a;
+  --og-blue: #0a84ff;
+  --og-bg: #000000;
+  --og-surface: #1c1c1e;
+  --og-fill: #2c2c2e;
+  --og-fill-2: #3a3a3c;
+  --og-label: #ffffff;
+  --og-label-2: rgba(235, 235, 245, 0.62);
+  --og-label-3: rgba(235, 235, 245, 0.32);
+  --og-sep: rgba(84, 84, 88, 0.6);
+}
+
+/* ---------- Glass scope ----------
+ * Inside (or on) a glass surface the solid fills would read as grey slabs, so
+ * they turn into translucent tints of the glass foreground instead. */
+.lg {
+  --og-surface: var(--lg-tint);
+  --og-fill: color-mix(in srgb, var(--lg-fg) 10%, transparent);
+  --og-fill-2: color-mix(in srgb, var(--lg-fg) 17%, transparent);
+  --og-label: var(--lg-fg);
+  --og-label-2: var(--lg-fg-muted);
+  --og-label-3: color-mix(in srgb, var(--lg-fg) 40%, transparent);
+  --og-sep: color-mix(in srgb, var(--lg-fg) 18%, transparent);
+}
+:root[data-lg-mode="flat"] .lg { --og-surface: var(--lg-solid); }
+@media (prefers-reduced-transparency: reduce) {
+  .lg { --og-surface: var(--lg-solid); }
+}
+
+/* ---------- Card ---------- */
+.og-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--og-radius);
+  background: var(--og-surface);
+  color: var(--og-label);
+  font-family: var(--og-font);
+}
+.og-card__title { margin: 0; font: 600 15px var(--og-font); color: var(--og-label-2); }
+
+/* ---------- Stat tile ---------- */
+.og-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+.og-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: var(--og-radius);
+  background: var(--og-surface);
+  color: var(--og-label);
+  font-family: var(--og-font);
+}
+.og-stat__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 400 15px var(--og-font);
+  color: var(--og-label-2);
+}
+.og-stat__label svg { width: 16px; height: 16px; flex: none; }
+.og-stat__value {
+  font: 700 32px/1.1 var(--og-font);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.og-stat__value--up { color: var(--og-acc); }
+.og-stat__value--down { color: var(--og-red); }
+
+/* ---------- Grouped list ---------- */
+.og-list { font-family: var(--og-font); color: var(--og-label); }
+.og-list__title {
+  margin: 0 0 7px;
+  padding-inline: 16px;
+  font: 400 13px var(--og-font);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--og-label-2);
+}
+.og-list__body {
+  border-radius: var(--og-radius);
+  background: var(--og-surface);
+  color: var(--og-label);
+  overflow: hidden;
+}
+.og-list__foot { margin: 7px 0 0; padding-inline: 16px; font-size: 13px; line-height: 1.38; color: var(--og-label-2); }
+.og-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 16px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: 400 17px var(--og-font);
+  text-align: start;
+}
+button.og-row, a.og-row { cursor: pointer; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+button.og-row:active, a.og-row:active { background: var(--og-fill); }
+/* Separator between rows; indented to line up with the text when rows have icons */
+.og-row + .og-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 16px 0;
+  border-top: 0.5px solid var(--og-sep);
+}
+.og-row:has(.og-row__icon) + .og-row:has(.og-row__icon)::before { inset-inline-start: 58px; }
+.og-row__icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 8px;
+  background: var(--tint, var(--og-acc));
+  color: #fff;
+}
+.og-row__icon svg { width: 18px; height: 18px; }
+.og-row__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.og-row__title { letter-spacing: -0.012em; line-height: 1.25; }
+.og-row__sub { font-size: 13px; line-height: 1.3; color: var(--og-label-2); }
+.og-row__value { color: var(--og-label-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.og-row__chevron { width: 14px; height: 14px; flex: none; color: var(--og-label-3); }
+.og-row--danger { color: var(--og-red); }
+
+/* ---------- Tags ---------- */
+.og-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.og-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--og-fill);
+  color: var(--og-label-2);
+  font: 500 13px var(--og-font);
+  white-space: nowrap;
+}
+.og-tag--accent {
+  background: color-mix(in srgb, var(--og-acc) 18%, transparent);
+  color: var(--og-acc);
+}
+.og-tag.lg { color: var(--og-label); }
+/* On glass the accent text loses contrast against busy backdrops, so the accent goes into the fill */
+.lg .og-tag--accent, .og-tag--accent.lg { background: color-mix(in srgb, var(--og-acc) 42%, transparent); color: var(--og-label); }
+
+/* ---------- Buttons ---------- */
+.og-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: var(--og-radius-sm);
+  background: var(--og-fill);
+  color: var(--og-label);
+  font: 600 16px var(--og-font);
+  cursor: pointer;
+  transition: transform 0.14s var(--og-ease), background 0.14s;
+  -webkit-tap-highlight-color: transparent;
+}
+.og-button:active { transform: scale(0.975); }
+.og-button:disabled { opacity: 0.35; pointer-events: none; }
+.og-button[hidden], .og-icon-button[hidden] { display: none; }
+.og-button svg { width: 18px; height: 18px; flex: none; }
+.og-button--primary { background: var(--og-acc); color: var(--og-on-acc); }
+.og-button--tinted { background: color-mix(in srgb, var(--og-acc) 16%, transparent); color: var(--og-acc); }
+.og-button--danger { background: color-mix(in srgb, var(--og-red) 15%, transparent); color: var(--og-red); }
+.og-button--plain { background: none; color: var(--og-acc); font-weight: 400; }
+.og-button--sm { min-height: 36px; padding: 8px 14px; font-size: 15px; border-radius: 8px; gap: 5px; }
+.og-button--sm svg { width: 16px; height: 16px; }
+.og-button--block { width: 100%; }
+/* Glass: tinted accent glass instead of a flat fill */
+.og-button.lg { background: var(--lg-tint); border-radius: var(--lg-radius-pill, 999px); }
+.og-button--primary.lg { background: color-mix(in srgb, var(--og-acc) 72%, transparent); color: var(--og-on-acc); text-shadow: none; }
+.og-button--danger.lg { background: color-mix(in srgb, var(--og-red) 30%, transparent); color: var(--og-label); }
+
+.og-icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--og-surface);
+  color: var(--og-label);
+  cursor: pointer;
+  transition: transform 0.14s var(--og-ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.og-icon-button:active { transform: scale(0.94); }
+.og-icon-button svg { width: 20px; height: 20px; }
+.og-icon-button--accent { color: var(--og-acc); }
+
+/* ---------- Check: <input type="checkbox" class="og-check"> ---------- */
+.og-check {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  margin: 0;
+  border-radius: 50%;
+  border: 2px solid var(--og-label-3);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.18s var(--og-ease), border-color 0.18s, transform 0.14s var(--og-ease);
+}
+.og-check::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 7px;
+  height: 13px;
+  border: solid var(--og-on-acc);
+  border-width: 0 2.5px 2.5px 0;
+  transform: translate(-50%, -50%) rotate(45deg) scale(0);
+  transition: transform 0.22s var(--og-ease);
+}
+.og-check:checked { background: var(--og-acc); border-color: var(--og-acc); }
+.og-check:checked::after { transform: translate(-50%, -50%) rotate(45deg) scale(1); }
+.og-check:active { transform: scale(0.92); }
+
+/* ---------- Switch: <input type="checkbox" class="og-switch"> ---------- */
+.og-switch {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 51px;
+  height: 31px;
+  flex: none;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--og-fill-2);
+  cursor: pointer;
+  transition: background 0.22s var(--og-ease);
+}
+.og-switch::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.16);
+  transition: transform 0.22s var(--og-ease), width 0.14s;
+}
+.og-switch:checked { background: var(--og-acc); }
+.og-switch:checked::before { transform: translateX(20px); }
+.og-switch:active::before { width: 31px; }
+.og-switch:checked:active::before { transform: translateX(16px); }
+
+/* ---------- Slider: <input type="range" class="og-slider"> ----------
+ * gym.js keeps --og-slider-pct in sync so the filled part of the track can be
+ * painted; without the JS the track is simply unfilled. */
+.og-slider {
+  --og-slider-pct: 50%;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+.og-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(var(--og-acc), var(--og-acc)) 0 / var(--og-slider-pct) 100% no-repeat, var(--og-fill-2);
+}
+.og-slider::-moz-range-track { height: 6px; border-radius: 3px; background: var(--og-fill-2); }
+.og-slider::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--og-acc); }
+.og-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  margin-top: -10px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.22), 0 0 0 0.5px rgba(0, 0, 0, 0.08);
+  transition: width 0.18s var(--og-ease);
+}
+.og-slider::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.22);
+}
+.og-slider:active::-webkit-slider-thumb { width: 36px; }
+.og-slider:disabled { opacity: 0.4; cursor: default; }
+.og-slider:focus-visible { outline: none; }
+.og-slider:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--og-acc); }
+.og-slider:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px var(--og-acc); }
+/* Glass: an iOS 26 style clear thumb that widens while you drag */
+.lg .og-slider::-webkit-slider-thumb {
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.85), inset 0 -4px 8px rgba(255, 255, 255, 0.35), 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+.lg .og-slider::-moz-range-thumb { background: rgba(255, 255, 255, 0.55); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.85), 0 3px 10px rgba(0, 0, 0, 0.2); }
+.og-slider-row { display: flex; align-items: center; gap: 12px; font-family: var(--og-font); color: var(--og-label); }
+.og-slider-row output { min-width: 4ch; text-align: end; font: 500 15px var(--og-font); font-variant-numeric: tabular-nums; color: var(--og-label-2); }
+
+/* ---------- Progress: <div class="og-progress" role="progressbar"><i style="--value:40%"></i></div> ---------- */
+.og-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--og-fill);
+  overflow: hidden;
+}
+.og-progress > i {
+  display: block;
+  height: 100%;
+  width: var(--value, 0%);
+  border-radius: inherit;
+  background: var(--og-acc);
+  transition: width 0.3s var(--og-ease);
+}
+
+/* ---------- Workout header ---------- */
+.og-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: var(--og-radius);
+  color: var(--og-label);
+  font-family: var(--og-font);
+}
+.og-header.lg { border-radius: 32px; }
+.og-header__text { display: flex; flex-direction: column; align-items: center; min-width: 0; text-align: center; }
+.og-header__title { font: 700 19px/1.2 var(--og-font); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.og-header__sub { font: 400 14px var(--og-font); color: var(--og-label-2); font-variant-numeric: tabular-nums; }
+.og-header__actions { display: flex; gap: 8px; }
+.og-header .og-progress { grid-column: 1 / -1; margin: 2px 6px 0; }
+.og-header .og-icon-button { background: var(--og-fill); }
+
+/* ---------- Stepper: <og-stepper> (gym.js) ---------- */
+og-stepper {
+  display: inline-flex;
+  align-items: center;
+  height: 48px;
+  min-width: 0;
+  border-radius: var(--og-radius-sm);
+  background: var(--og-fill);
+  color: var(--og-label);
+  font-family: var(--og-font);
+}
+og-stepper.lg { background: var(--lg-tint); border-radius: 999px; }
+.og-stepper__btn {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 100%;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.14s var(--og-ease);
+}
+.og-stepper__btn:active { transform: scale(0.88); }
+.og-stepper__btn:disabled { opacity: 0.3; cursor: default; }
+.og-stepper__btn svg { width: 18px; height: 18px; }
+.og-stepper__val { flex: 1; min-width: 0; display: flex; align-items: baseline; justify-content: center; gap: 3px; }
+.og-stepper__input {
+  width: 100%;
+  min-width: 2ch;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  color: inherit;
+  font: 500 18px var(--og-font);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.og-stepper__unit { font: 400 13px var(--og-font); color: var(--og-label-2); }
+.og-stepper__val:has(.og-stepper__unit) .og-stepper__input { text-align: end; }
+og-stepper:has(.og-stepper__input:focus-visible) { box-shadow: 0 0 0 2px var(--og-acc); }
+og-stepper[invalid] { box-shadow: 0 0 0 2px var(--og-red); }
+
+/* ---------- Set rows (workout logging) ---------- */
+.og-sets { display: flex; flex-direction: column; gap: 8px; font-family: var(--og-font); color: var(--og-label); }
+.og-sets__head,
+.og-set {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1.35fr) minmax(0, 1fr) minmax(48px, 0.6fr) 36px;
+  align-items: center;
+  gap: 8px;
+}
+.og-sets__head {
+  padding-inline: 6px;
+  font: 400 12px var(--og-font);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--og-label-2);
+}
+.og-set {
+  padding: 6px;
+  border-radius: var(--og-radius-sm);
+  transition: background 0.2s var(--og-ease);
+}
+.og-set og-stepper { width: 100%; }
+.og-set:has(.og-check:checked) { background: color-mix(in srgb, var(--og-acc) 14%, transparent); }
+.og-set__num {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--og-fill);
+  color: var(--og-label-2);
+  font: 500 14px var(--og-font);
+}
+.og-set:has(.og-check:checked) .og-set__num { background: var(--og-acc); color: var(--og-on-acc); }
+.og-set__chip {
+  height: 48px;
+  min-width: 0;
+  padding: 0 6px;
+  border: 0;
+  border-radius: var(--og-radius-sm);
+  background: var(--og-fill);
+  color: var(--og-label-2);
+  font: 500 15px var(--og-font);
+  cursor: pointer;
+}
+.og-set__chip[data-value] { color: var(--og-label); }
+.og-set .og-check { justify-self: center; }
+@media (max-width: 420px) {
+  .og-sets__head, .og-set { grid-template-columns: 24px minmax(0, 1.3fr) minmax(0, 1fr) 36px; gap: 6px; }
+  .og-sets__head > :nth-child(4), .og-set__chip { display: none; }
+  .og-stepper__btn { width: 32px; }
+}
+
+/* ---------- Rest timer: <og-rest-timer> (gym.js) ---------- */
+og-rest-timer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px 12px;
+  border-radius: var(--og-radius);
+  background: var(--og-surface);
+  color: var(--og-label);
+  font-family: var(--og-font);
+  overflow: hidden;
+}
+og-rest-timer.lg { border-radius: 26px; }
+og-rest-timer[docked] {
+  position: fixed;
+  left: 50%;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  width: min(calc(100% - 24px), 520px);
+  z-index: 60;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+og-rest-timer[hidden] { display: none; }
+.og-timer__bar { position: absolute; inset: 0 0 auto; height: 3px; background: var(--og-fill); }
+.og-timer__bar > i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--og-acc);
+  transform-origin: left;
+  transform: scaleX(var(--p, 1));
+  transition: transform 0.25s linear;
+}
+og-rest-timer[data-state="paused"] .og-timer__bar > i { background: var(--og-label-3); }
+og-rest-timer[data-state="ready"] .og-timer__bar > i { background: var(--og-acc); }
+.og-timer__clock {
+  display: flex;
+  flex-direction: column;
+  min-width: 74px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: start;
+}
+.og-timer__time { font: 700 26px/1.1 var(--og-font); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.og-timer__label { font: 400 13px var(--og-font); color: var(--og-label-2); }
+og-rest-timer[data-state="ready"] .og-timer__time { color: var(--og-acc); }
+og-rest-timer[data-state="paused"] .og-timer__time { color: var(--og-label-2); }
+.og-timer__acts { flex: 1; display: flex; justify-content: flex-end; gap: 6px; min-width: 0; }
+.og-timer__acts .og-button { padding-inline: 10px; }
+.og-timer__acts [data-act="skip"] { margin-inline-start: 4px; }
+og-rest-timer.lg .og-timer__acts .og-button:not(.og-button--primary) { background: var(--og-fill); }
+og-rest-timer.lg .og-timer__acts .og-button--primary { background: color-mix(in srgb, var(--og-acc) 78%, transparent); }
+@media (max-width: 420px) {
+  .og-timer__acts .og-button span { display: none; }
+}
+
+/* ---------- Heatmap: <og-heatmap> (gym.js) ---------- */
+og-heatmap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  color: var(--og-label);
+  font-family: var(--og-font);
+  --og-hm-cell: 13px;
+  --og-hm-gap: 3px;
+}
+og-heatmap.lg { padding: 16px; border-radius: var(--og-radius); }
+.og-hm__body { display: flex; gap: 6px; min-width: 0; }
+.og-hm__scroll { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
+.og-hm__scroll::-webkit-scrollbar { display: none; }
+.og-hm__inner { display: grid; gap: 4px; width: max-content; margin-inline-start: auto; }
+.og-hm__months,
+.og-hm__grid { display: grid; grid-auto-flow: column; grid-auto-columns: var(--og-hm-cell); gap: var(--og-hm-gap); }
+.og-hm__months { font-size: 11px; color: var(--og-label-2); height: 14px; }
+.og-hm__months span { white-space: nowrap; overflow: visible; }
+.og-hm__days { display: grid; grid-template-rows: repeat(7, var(--og-hm-cell)); gap: var(--og-hm-gap); margin-top: 18px; flex: none; font-size: 10px; line-height: var(--og-hm-cell); color: var(--og-label-2); }
+.og-hm__grid { grid-template-rows: repeat(7, var(--og-hm-cell)); }
+.og-hm__c {
+  display: block;
+  width: var(--og-hm-cell);
+  height: var(--og-hm-cell);
+  border-radius: 3px;
+  background: var(--og-fill);
+}
+.og-hm__c[data-l="1"] { background: color-mix(in srgb, var(--og-acc) 32%, var(--og-fill)); }
+.og-hm__c[data-l="2"] { background: color-mix(in srgb, var(--og-acc) 55%, var(--og-fill)); }
+.og-hm__c[data-l="3"] { background: color-mix(in srgb, var(--og-acc) 78%, var(--og-fill)); }
+.og-hm__c[data-l="4"] { background: var(--og-acc); }
+.og-hm__c[data-today] { box-shadow: inset 0 0 0 1.5px var(--og-acc); }
+.og-hm__c[data-future] { visibility: hidden; }
+.og-hm__c[data-value] { cursor: pointer; }
+.og-hm__legend { display: flex; align-items: center; justify-content: flex-end; gap: 4px; font-size: 12px; color: var(--og-label-2); }
+.og-hm__legend .og-hm__c { width: 11px; height: 11px; }
+.og-hm__legend span:first-child { margin-inline-end: 4px; }
+.og-hm__legend span:last-child { margin-inline-start: 4px; }
+
+/* ---------- Line chart: <og-line-chart> (gym.js) ---------- */
+og-line-chart {
+  position: relative;
+  display: block;
+  min-width: 0;
+  color: var(--og-label);
+  font-family: var(--og-font);
+  -webkit-tap-highlight-color: transparent;
+}
+og-line-chart.lg { padding: 12px; border-radius: var(--og-radius); }
+og-line-chart:focus-visible { outline: 2px solid var(--og-acc); outline-offset: 2px; border-radius: 8px; }
+.og-lc__svg { display: block; width: 100%; overflow: visible; touch-action: pan-y; }
+.og-lc__grid { stroke: var(--og-sep); stroke-width: 1; }
+.og-lc__axis { fill: var(--og-label-2); font-size: 10px; font-variant-numeric: tabular-nums; }
+.og-lc__line { fill: none; stroke: var(--og-lc-color, var(--og-acc)); stroke-width: 2.25; stroke-linejoin: round; stroke-linecap: round; }
+.og-lc__area { fill: var(--og-lc-color, var(--og-acc)); opacity: 0.14; }
+.og-lc__dot { fill: var(--og-lc-color, var(--og-acc)); }
+.og-lc__goal { stroke: var(--og-label-2); stroke-width: 1; stroke-dasharray: 4 4; }
+.og-lc__cursor { stroke: var(--og-label-3); stroke-width: 1; }
+.og-lc__focus { fill: var(--og-lc-color, var(--og-acc)); stroke: var(--og-surface); stroke-width: 2.5; }
+.og-lc__tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: var(--og-fill-2);
+  color: var(--og-label);
+  font: 500 12px var(--og-font);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+}
+og-line-chart.lg .og-lc__tip { background: var(--lg-tint-strong); }
+.og-lc__empty { padding: 28px 0; text-align: center; font-size: 14px; color: var(--og-label-2); }
+
+/* ---------- Swipe row: <og-swipe-row> (gym.js) ---------- */
+og-swipe-row {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: var(--og-radius-sm);
+  touch-action: pan-y;
+  font-family: var(--og-font);
+}
+.og-swipe__front {
+  position: relative;
+  z-index: 1;
+  background: var(--og-surface);
+  color: var(--og-label);
+  border-radius: inherit;
+  transition: transform 0.28s var(--og-ease);
+}
+og-swipe-row.lg .og-swipe__front { background: transparent; }
+og-swipe-row[data-dragging] .og-swipe__front { transition: none; }
+og-swipe-row[data-dragging] { user-select: none; }
+.og-swipe__front:focus-visible { outline: 2px solid var(--og-acc); outline-offset: -2px; }
+.og-swipe__pane {
+  position: absolute;
+  inset-block: 0;
+  display: flex;
+  align-items: stretch;
+  width: 0;
+  overflow: hidden;
+}
+.og-swipe__pane--delete { right: 0; justify-content: flex-end; background: var(--og-red); }
+.og-swipe__pane--copy { left: 0; justify-content: flex-start; background: var(--og-blue); }
+.og-swipe__pane button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 84px;
+  padding: 0 12px;
+  border: 0;
+  background: none;
+  color: #fff;
+  font: 600 12px var(--og-font);
+  cursor: pointer;
+}
+.og-swipe__pane button svg { width: 20px; height: 20px; }
+og-swipe-row[data-leaving] { transition: height 0.24s var(--og-ease), opacity 0.24s; opacity: 0; }
+og-swipe-row[data-flash] .og-swipe__front { animation: og-flash 0.6s var(--og-ease); }
+@keyframes og-flash { 30% { background: color-mix(in srgb, var(--og-acc) 30%, var(--og-surface)); } }
+.og-swipe-list { display: flex; flex-direction: column; gap: 8px; }
+
+/* ---------- Wheel picker: <og-wheel> (gym.js) ---------- */
+og-wheel {
+  --og-wheel-item: 38px;
+  --og-wheel-rows: 5;
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  height: calc(var(--og-wheel-item) * var(--og-wheel-rows));
+  border-radius: var(--og-radius);
+  color: var(--og-label);
+  font-family: var(--og-font);
+}
+og-wheel:focus-visible { outline: 2px solid var(--og-acc); outline-offset: 2px; }
+.og-wheel__band {
+  position: absolute;
+  inset-inline: 8px;
+  top: 50%;
+  height: var(--og-wheel-item);
+  transform: translateY(-50%);
+  border-radius: 10px;
+  background: var(--og-fill);
+  pointer-events: none;
+}
+og-wheel.lg .og-wheel__band { background: var(--og-fill-2); }
+.og-wheel__scroll {
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+  -webkit-mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent);
+  mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent);
+}
+.og-wheel__scroll::-webkit-scrollbar { display: none; }
+.og-wheel__pad { height: calc(var(--og-wheel-item) * (var(--og-wheel-rows) - 1) / 2); }
+.og-wheel__item {
+  display: grid;
+  place-items: center;
+  height: var(--og-wheel-item);
+  scroll-snap-align: center;
+  font: 500 22px var(--og-font);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.12s, transform 0.12s;
+}
+.og-wheel__item[aria-selected="true"] { font-weight: 600; }
+
+/* ---------- Elapsed: <og-elapsed> (gym.js) ---------- */
+og-elapsed { font-variant-numeric: tabular-nums; }
+
+/* ---------- Tab bar with a centre action (pairs with <lg-tab-bar>) ---------- */
+lg-tab-bar > button.og-tab-fab { overflow: visible; }
+lg-tab-bar > button.og-tab-fab svg {
+  box-sizing: content-box;
+  width: 26px;
+  height: 26px;
+  padding: 15px;
+  margin-top: -30px;
+  border-radius: 50%;
+  background: var(--og-acc);
+  color: var(--og-on-acc);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--og-acc) 22%, transparent), 0 8px 18px rgba(0, 0, 0, 0.25);
+  transition: transform 0.25s var(--lg-spring, var(--og-ease));
+}
+lg-tab-bar > button.og-tab-fab:active svg { transform: scale(0.94); }
+lg-tab-bar > button.og-tab-fab { color: var(--og-acc); }
+lg-tab-bar:has(> button.og-tab-fab[aria-selected="true"]) .lg-ind { opacity: 0; }
+lg-tab-bar .lg-ind { transition: transform 0.45s var(--lg-spring), width 0.3s var(--lg-ease), opacity 0.2s; }
+
+/* ---------- Focus ---------- */
+.og-button:focus-visible,
+.og-icon-button:focus-visible,
+.og-check:focus-visible,
+.og-switch:focus-visible,
+.og-row:focus-visible,
+.og-set__chip:focus-visible,
+.og-stepper__btn:focus-visible,
+.og-timer__clock:focus-visible,
+.og-swipe__pane button:focus-visible {
+  outline: 2px solid var(--og-acc);
+  outline-offset: 2px;
+}
+
+/* ---------- Motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .og-button, .og-icon-button, .og-check, .og-check::after, .og-switch, .og-switch::before,
+  .og-progress > i, .og-timer__bar > i, .og-slider::-webkit-slider-thumb, .og-swipe__front, .og-stepper__btn, .og-wheel__item,
+  og-swipe-row[data-leaving] { transition: none; }
+  og-swipe-row[data-flash] .og-swipe__front { animation: none; }
+  lg-tab-bar .lg-ind, lg-tab-bar > button.og-tab-fab svg { transition: none; }
+}
