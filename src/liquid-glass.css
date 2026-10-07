@@ -18,8 +18,10 @@
   --lg-edge: rgba(255, 255, 255, 0.75);
   --lg-shadow: rgba(20, 30, 60, 0.18);
   --lg-fg: #10141f;
-  --lg-fg-muted: rgba(16, 20, 31, 0.62);
+  --lg-fg-muted: rgba(16, 20, 31, 0.74);
   --lg-accent: #2f6bff;
+  --lg-selected: #2f6bff; /* selected tab label/icon */
+  --lg-text-shadow: 0 1px 2px rgba(255, 255, 255, 0.35);
   --lg-accent-fg: #ffffff;
   --lg-backdrop: rgba(10, 14, 24, 0.28);
   --lg-radius-sm: 12px;
@@ -37,8 +39,10 @@
     --lg-edge: rgba(255, 255, 255, 0.28);
     --lg-shadow: rgba(0, 0, 0, 0.5);
     --lg-fg: #f3f5fb;
-    --lg-fg-muted: rgba(243, 245, 251, 0.62);
+    --lg-fg-muted: rgba(243, 245, 251, 0.8);
     --lg-accent: #6b95ff;
+    --lg-selected: #ffffff;
+    --lg-text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
     --lg-backdrop: rgba(0, 0, 0, 0.45);
   }
 }
@@ -49,8 +53,10 @@
   --lg-edge: rgba(255, 255, 255, 0.28);
   --lg-shadow: rgba(0, 0, 0, 0.5);
   --lg-fg: #f3f5fb;
-  --lg-fg-muted: rgba(243, 245, 251, 0.62);
+  --lg-fg-muted: rgba(243, 245, 251, 0.8);
   --lg-accent: #6b95ff;
+  --lg-selected: #ffffff;
+  --lg-text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
   --lg-backdrop: rgba(0, 0, 0, 0.45);
 }
 
@@ -59,6 +65,7 @@
   position: relative;
   isolation: isolate;
   color: var(--lg-fg);
+  text-shadow: var(--lg-text-shadow);
   background: var(--lg-tint);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   backdrop-filter: blur(12px) saturate(180%);
@@ -137,11 +144,11 @@ lg-tab-bar > button {
   gap: 3px;
   padding: 6px 0;
   cursor: pointer;
-  opacity: 0.72;
+  opacity: 0.85;
   transition: opacity 0.2s;
   -webkit-tap-highlight-color: transparent;
 }
-lg-tab-bar > button[aria-selected="true"] { opacity: 1; color: var(--lg-accent); }
+lg-tab-bar > button[aria-selected="true"] { opacity: 1; color: var(--lg-selected); }
 lg-tab-bar > button svg { width: 24px; height: 24px; }
 
 /* ---------- Segmented control: <lg-segmented> ---------- */
