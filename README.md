@@ -2,13 +2,14 @@
 
 **Live site: [liquid-glass-ui-ruby.vercel.app](https://liquid-glass-ui-ruby.vercel.app)**
 
-Apple-style Liquid Glass components for the web, plus two companion collections:
+Apple-style Liquid Glass components for the web, plus three companion collections:
 
 | Collection | Files | Demo |
 | --- | --- | --- |
 | **Liquid Glass** | `liquid-glass.css` + `liquid-glass.js` | [`demo/index.html`](demo/index.html) |
 | **Liquid Metal** | `liquid-metal.css` + optional `liquid-metal.js` | [`demo/metal.html`](demo/metal.html) |
 | **Gradients** | `gradients.css` (no JS) | [`demo/gradients.html`](demo/gradients.html) |
+| **Gym kit** | `gym.css` + `gym.js` | [`demo/gym.html`](demo/gym.html) |
 
 Every demo page has a controls panel at the top to tune the look live and copy the code for your settings, and every snippet has a Copy button.
 
@@ -43,7 +44,7 @@ Or from a CDN, straight from this repo:
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/PedroPerillo/liquid-glass-ui@main/src/liquid-glass.css">
 <script type="module" src="https://cdn.jsdelivr.net/gh/PedroPerillo/liquid-glass-ui@main/src/liquid-glass.js"></script>
-<!-- same pattern for liquid-metal.css, liquid-metal.js and gradients.css -->
+<!-- same pattern for liquid-metal.css, liquid-metal.js, gradients.css, gym.css and gym.js -->
 ```
 
 Any element with the `lg` class becomes a glass surface, including ones added later.
@@ -116,7 +117,8 @@ Custom elements work directly in React 19:
 ```jsx
 import 'liquid-glass-ui/style.css';
 import 'liquid-glass-ui';
-// also available: 'liquid-glass-ui/metal', 'liquid-glass-ui/metal.css', 'liquid-glass-ui/gradients.css'
+// also available: 'liquid-glass-ui/metal', 'liquid-glass-ui/metal.css', 'liquid-glass-ui/gradients.css',
+// 'liquid-glass-ui/gym', 'liquid-glass-ui/gym.css'
 
 export function TabBar({ onChange }) {
   return (
@@ -187,6 +189,47 @@ Mesh gradient backgrounds made from layered radial gradients. Pure CSS, crisp at
 Presets: `grad-dusk`, `grad-mint`, `grad-lagoon`, `grad-citrus`, `grad-orchid`, `grad-ember`, `grad-midnight`, `grad-cotton`, `grad-prism`. Each sets `--grad-fg` and `--grad-fg-muted` so text on top stays readable.
 
 Modifiers: `grad--animate` (slow drifting light), `grad--grain` (film grain, uses `::after`), `grad-text` (clip the gradient to text), `grad-card` (ready-made balance card layout).
+
+## Gym kit
+
+Workout-tracker components modelled on [openGym](https://github.com/DuarteSantos8/openGym), a self-hosted gym tracker. They were written from scratch for this library and are MIT licensed like the rest of it.
+
+Every component comes in two styles from the same markup. On its own it's the **solid** style: neutral surfaces, hairlines and one accent colour. Add the `lg` class (with `liquid-glass.css` and `liquid-glass.js` loaded) and it becomes **Liquid Glass**. Anything inside a glass surface switches to see-through fills automatically, so a stepper inside a glass card needs no extra class. `setMode('flat')` and Reduce Transparency turn the glass versions solid again.
+
+```html
+<link rel="stylesheet" href="src/liquid-glass.css">  <!-- only needed for the glass versions -->
+<link rel="stylesheet" href="src/gym.css">
+<script type="module" src="src/liquid-glass.js"></script>
+<script type="module" src="src/gym.js"></script>
+
+<og-stepper value="77.5" step="2.5" min="0" unit="kg" label="Weight"></og-stepper>
+<og-rest-timer class="lg" duration="90"></og-rest-timer>
+```
+
+| Component | Markup | Notes |
+| --- | --- | --- |
+| Stepper | `<og-stepper value step min max unit label>` | Hold to repeat (speeds up), comma decimals, clamps when you leave the field. Arrows, Page Up/Down, Home/End. `input` / `change` events with `detail.value`; `value` attribute stays in sync. |
+| Set rows | `.og-sets` > `.og-sets__head` + `.og-set` | Number, weight and reps steppers, effort chip and done check. A ticked row tints itself. |
+| Check | `<input type="checkbox" class="og-check">` | Round done-check. |
+| Switch | `<input type="checkbox" class="og-switch">` | Uses the accent colour. |
+| Slider | `<input type="range" class="og-slider">` | Native range with a filled track. Call `updateSlider(input)` after setting the value from code. |
+| Rest timer | `<og-rest-timer duration="90">` | −15s, +15s, pause, skip; Ready at zero (vibrates, announced). `start()`, `add()`, `pause()`, `resume()`, `skip()`; `rest-start` / `rest-end` events. `docked` pins it to the bottom. |
+| Heatmap | `<og-heatmap weeks="26" unit="min">` + `el.data = { 'YYYY-MM-DD': n }` | Quartile shading, month and weekday labels, `day` event on click. Only the container can be glass. |
+| Line chart | `<og-line-chart unit="kg" goal="79">` + `el.points = [{ x, y }]` | Drawn at real width. Hover, drag or arrow keys to read points; `goal`, `invert`, `height`. |
+| Swipe row | `<og-swipe-row>…</og-swipe-row>` | Left to delete, right to copy (`no-copy` to turn off). ← / → / Esc from the keyboard. Cancelable `swipe-delete` / `swipe-copy` events. |
+| Wheel | `<og-wheel min max step value format="duration">` | Scroll-snap picker, `role="spinbutton"`, arrow keys. |
+| Elapsed | `<og-elapsed start="…">` | Running `m:ss` clock. |
+| Workout header | `.og-header` | Close, title, live sub-line, actions and an `.og-progress` bar. |
+| Progress | `<div class="og-progress" role="progressbar"><i style="--value:40%"></i></div>` | |
+| Stat tile | `.og-stats` > `.og-stat` | `og-stat__value--up` / `--down` colour a change. |
+| Grouped list | `.og-list` > `.og-list__body` > `.og-row` | Icon, title, subtitle, value, chevron. |
+| Card | `.og-card` | |
+| Buttons | `.og-button` (`--primary`, `--tinted`, `--danger`, `--plain`, `--sm`) | Pill-shaped when glass. |
+| Icon button | `.og-icon-button` (`--accent`) | |
+| Tag | `.og-tag` (`--accent`) | |
+| Tab bar action | `<button class="og-tab-fab">` inside `<lg-tab-bar>` | Raised centre button, like openGym's Start. |
+
+Theme it with `--og-acc` (accent), `--og-on-acc`, `--og-surface`, `--og-fill`, `--og-label` and `--og-radius`. Light and dark follow the same rules as the glass components.
 
 ## Gotchas
 

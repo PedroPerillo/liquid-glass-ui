@@ -1,7 +1,7 @@
 {
   "name": "liquid-glass-ui",
   "version": "0.2.0",
-  "description": "Apple-style Liquid Glass and Liquid Metal components for the web, plus mesh gradient backgrounds. Real refraction in Chromium, graceful fallbacks everywhere.",
+  "description": "Apple-style Liquid Glass and Liquid Metal components for the web, plus mesh gradient backgrounds and a workout-tracker kit. Real refraction in Chromium, graceful fallbacks everywhere.",
   "type": "module",
   "main": "src/liquid-glass.js",
   "module": "src/liquid-glass.js",
@@ -17,7 +17,12 @@
       "default": "./src/liquid-metal.js"
     },
     "./metal.css": "./src/liquid-metal.css",
-    "./gradients.css": "./src/gradients.css"
+    "./gradients.css": "./src/gradients.css",
+    "./gym": {
+      "types": "./types/gym.d.ts",
+      "default": "./src/gym.js"
+    },
+    "./gym.css": "./src/gym.css"
   },
   "files": [
     "src",
@@ -39,7 +44,11 @@
     "backdrop-filter",
     "liquid metal",
     "chrome",
-    "mesh gradient"
+    "mesh gradient",
+    "workout",
+    "fitness",
+    "stepper",
+    "heatmap"
   ],
   "author": "Pedro Perillo",
   "license": "MIT",
