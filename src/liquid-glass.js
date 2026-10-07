@@ -124,34 +124,69 @@ function frostedValue(blur) {
   return `blur(${blur}px) saturate(180%)`;
 }
 
+function applyValue(el, value) {
+  // Inline on purpose: Safari ignores CSS variables in -webkit-backdrop-filter.
+  if (el.style.backdropFilter === value) return;
+  el.style.backdropFilter = value;
+  el.style.webkitBackdropFilter = value;
+}
+
+/**
+ * Chrome resolves a backdrop-filter url() once. If the filter's map image is
+ * still loading at that moment, Chrome treats the filter as invalid and skips
+ * painting the element entirely, and it doesn't re-check when the image
+ * arrives. So a filter is never edited in place: each new shape gets a fresh
+ * filter (new id) whose map is decoded before the element points at it.
+ * Until then the element shows frosted glass, so it's never invisible.
+ */
 function render(el) {
   const s = surfaces.get(el);
   if (!s) return;
   const blur = el.dataset.lgBlur != null ? +el.dataset.lgBlur : options.blur;
-  let value = '';
-  if (mode === 'frost' || (mode === 'liquid' && !supportsRefraction)) {
-    value = frostedValue(blur);
-  } else if (mode === 'liquid') {
-    const W = Math.round(el.offsetWidth);
-    const H = Math.round(el.offsetHeight);
-    if (!W || !H) return;
-    const r = radiusOf(el, W, H);
-    const auto = Math.max(16, Math.min(60, H * 0.9));
-    const bend = (el.dataset.lgBend != null ? +el.dataset.lgBend : auto) * options.refraction;
-    if (!s.filter) s.filter = createFilter(s.id);
-    const f = s.filter;
+
+  if (mode === 'flat') { applyValue(el, ''); return; }
+  if (mode === 'frost' || !supportsRefraction) { applyValue(el, frostedValue(blur)); return; }
+
+  const W = Math.round(el.offsetWidth);
+  const H = Math.round(el.offsetHeight);
+  if (!W || !H) { applyValue(el, frostedValue(blur)); return; }
+  const r = radiusOf(el, W, H);
+  const auto = Math.max(16, Math.min(60, H * 0.9));
+  const bend = Math.round((el.dataset.lgBend != null ? +el.dataset.lgBend : auto) * options.refraction * 10) / 10;
+  const key = `${W}x${H}x${r}x${bend}`;
+  const currentBlur = () => (el.dataset.lgBlur != null ? +el.dataset.lgBlur : options.blur);
+  const liquidValue = (id) => `url(#${id}) blur(${Math.round(currentBlur() * 0.35)}px)`;
+
+  // Same shape as the live filter: only the blur may have changed.
+  if (s.key === key && s.filter) { applyValue(el, liquidValue(s.filter.id)); return; }
+
+  // New shape: keep showing what we have (or frosted) while the new map decodes.
+  if (!s.filter) applyValue(el, frostedValue(blur));
+  s.key = key;
+  const gen = (s.gen = (s.gen || 0) + 1);
+  const url = buildMap(W, H, r);
+  const img = new Image();
+  img.src = url;
+  const ready = img.decode ? img.decode().catch(() => {}) : Promise.resolve();
+  ready.then(() => {
+    if (s.gen !== gen || !surfaces.has(el) || mode !== 'liquid') return;
+    const f = createFilter(`${s.id}-${gen}`);
     f.setAttribute('width', W);
     f.setAttribute('height', H);
     const feImage = f.querySelector('feImage');
     feImage.setAttribute('width', W);
     feImage.setAttribute('height', H);
-    feImage.setAttribute('href', buildMap(W, H, r));
+    feImage.setAttribute('href', url);
     f.querySelector('feDisplacementMap').setAttribute('scale', bend);
-    value = `url(#${s.id}) blur(${Math.round(blur * 0.35)}px)`;
-  }
-  // Inline on purpose: Safari ignores CSS variables in -webkit-backdrop-filter.
-  el.style.backdropFilter = value;
-  el.style.webkitBackdropFilter = value;
+    // Give Chrome a frame to load the feImage before pointing at the filter.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (s.gen !== gen || !surfaces.has(el)) { f.remove(); return; }
+      const old = s.filter;
+      s.filter = f;
+      if (mode === 'liquid') applyValue(el, liquidValue(f.id));
+      if (old) requestAnimationFrame(() => old.remove());
+    }));
+  });
 }
 
 const resizeObserver = typeof ResizeObserver !== 'undefined'
